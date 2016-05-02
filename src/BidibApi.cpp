@@ -81,11 +81,16 @@ bool BidibApi::getLocDirection(int locID) {
 	return bidibMessageHandler.locs[locID].direction;
 }
 
-void BidibApi::setLocFunction(int locID, locFunction locFunctionID, bool functionState) {
-	bidibMessageHandler.sendFunctionStateMessage(locID, locFunctionID.ID, functionState);
+void BidibApi::setLocFunction(int locID, locFunction::locFunctionID ID, bool functionState) {
+	bidibMessageHandler.sendFunctionStateMessage(locID, ID, functionState);
 }
 
-bool BidibApi::getLocFunctionstate(int locID, int functionNumber) {
+bool BidibApi::getLocFunctionstate(int locID, locFunction::locFunctionID ID) {
+	if(ID == locFunction::FLight){
+		return bidibMessageHandler.locs[locID].lightState;
+	}else{
+		return bidibMessageHandler.locs[locID].functionState[ID];
+	}
 }
 
 Turnout::turnDirection BidibApi::getTurnoutState(Turnout::turnoutID turnID) {
