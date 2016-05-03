@@ -8,13 +8,16 @@
 #include "BiDiBMessageHandler.h"
 
 BiDiBMessageHandler::BiDiBMessageHandler() {
+	connected = true;
 	serialPort = NULL;
 	if(!this->initSerialPort("/dev/ttyUSB0")){
+		connected = false;
 		return;
 	}
 
 	receiverThread = std::thread(&BiDiBMessageHandler::getMessage, this);
 	if(!initBidib()){
+		connected = false;
 		return;
 	}
 
@@ -56,17 +59,17 @@ bool BiDiBMessageHandler::initSerialPort(int comPortNumber) {
 
 bool BiDiBMessageHandler::initBidib() {
 	if(isConnected()){
-		sendSystemMessage(0, MSG_SYS_GET_MAGIC);
+		sendSystemMessage(gbmMasterID, MSG_SYS_GET_MAGIC);
 		printf("Magic gesendet... num: %X\n", msgNum);
 		usleep(1000*1000);
 
-		sendSystemMessage(0, MSG_SYS_RESET);
+		sendSystemMessage(gbmMasterID, MSG_SYS_RESET);
 		usleep(2000*1000);
 		printf("Reset gesendet... num: %X\n");
 
-//		sendNodeTabMessage();
-//		printf("Get_NodeTab gesendet... num: %X\n", msgNum);
-//		usleep(1000*1000);
+		sendNodeTabMessage();
+		printf("Get_NodeTab gesendet... num: %X\n", msgNum);
+		usleep(1000*1000);
 
 //		for(int i = 1; i < nodeCount ; i++){
 //			sendSystemMessage(i, MSG_SYS_GET_MAGIC);
@@ -78,19 +81,21 @@ bool BiDiBMessageHandler::initBidib() {
 ////			printf("Reset gesendet... num: %X\n");
 //		}
 
-
 //		for(int i = 0; i < 3; i++){
 //			sendFeatureMessage(i);
 //			printf("Get Features gesendet... num: %X\n", msgNum);
 //			usleep(1000*1000);
 //		}
 
-
 //		sendSystemMessage(MSG_DBM);
 //		printf("Msg_DBM gesendet... num: %X\n", msgNum);
 //		usleep(1000*1000);
 
-		sendSystemMessage(0, MSG_SYS_ENABLE);
+		if(nodeCount != NODECOUNT){
+			return false;
+		}
+
+		sendSystemMessage(gbmMasterID, MSG_SYS_ENABLE);
 		printf("Sys_enable gesendet... num: %X\n", msgNum);
 		usleep(1000*1000);
 
@@ -101,7 +106,7 @@ bool BiDiBMessageHandler::initBidib() {
 }
 
 bool BiDiBMessageHandler::isConnected() {
-	return serialPort->IsConnected();
+	return connected;
 }
 
 const char* BiDiBMessageHandler::convertComPortNumber(int comPortNumber) {
@@ -226,7 +231,6 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 	int maxLength = 0;
 
 	do{
-
 		int msgLen = message[0 + maxLength] + 1;
 
 		unsigned char msg [msgLen];
@@ -271,12 +275,21 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 											}
 											processOther(msg);
 											break;
-			case MSG_NODETAB_COUNT:
-			case MSG_NODETAB:
-			case MSG_SYS_ERROR:
-			case MSG_NODE_NA:
+
 			case MSG_LC_NA:
-			case MSG_LC_STAT:
+			case MSG_LC_STAT:				if(SHOWTURNOUTSTATE){
+												printMessage(msg);
+											}
+											processTurnoutStateMessage(msg);
+											break;
+			case MSG_NODE_NA:
+			case MSG_NODETAB_COUNT:
+			case MSG_NODETAB:				if(SHOWNODETAB){
+												printMessage(msg);
+											}
+											processNodeTabMessage(msg);
+											break;
+			case MSG_SYS_ERROR:
 			case MSG_BM_DYN_STATE:
 			case MSG_BM_CONFIDENCE:
 			case MSG_CS_DRIVE_ACK: 			if(SHOWSYSMESSAGES){
@@ -295,7 +308,7 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 
 int BiDiBMessageHandler::processBM(unsigned char* message) {
 	int messageOffset = 0;
-	if (message[1] != 0x00){
+	if (message[1] != gbmMasterID){
 		messageOffset = 1;
 	}
 
@@ -331,14 +344,8 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 int BiDiBMessageHandler::processOther(unsigned char* message) {
 
 	int messageOffset = 0;
-	if (message[1] != 0x00){
+	if (message[1] != gbmMasterID){
 		messageOffset = 1;
-	}
-	if(message[3 + messageOffset] == MSG_NODETAB_COUNT){
-		nodeCount = message[4 + messageOffset];
-		if(nodeCount == 0){
-			sendNodeTabMessage(); printf("another try to get NodeTab...\n"); fflush(stdout);
-		}
 	}
 
 	return 0;
@@ -346,7 +353,7 @@ int BiDiBMessageHandler::processOther(unsigned char* message) {
 
 int BiDiBMessageHandler::processFeature(unsigned char* message) {
 	int messageOffset = 0;
-	if(message[1] != 0x00){
+	if(message[1] != gbmMasterID){
 		messageOffset = 1;
 	}
 
@@ -363,7 +370,6 @@ int BiDiBMessageHandler::processlocMessage(unsigned char* message) {
 	if(locAddress == 0x00){
 		for(int i = 0; i < locCount; i++){
 			if((locs[i].position >> locPosition) & 1){
-//				locs[i].position &= ~(0x01 << locPosition);
 				setLocPosition(i, locPosition, false);
 			}
 		}
@@ -379,7 +385,6 @@ int BiDiBMessageHandler::processlocMessage(unsigned char* message) {
 			locs[locIndex].id = locAddress;
 			locCount++;
 		}
-//		locs[locIndex].position |= (0x01 << locPosition);
 		setLocPosition(locIndex, locPosition, true);
 	}
 }
@@ -393,8 +398,10 @@ int BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
 	bool occupied;
 	int position = -1;
 	int messageOffset = 0;
-	if (message[1] != 0x00){
+	if (message[1] == oneOcID){
 		messageOffset = 1;
+	}else{
+		return -1;
 	}
 
 	int switchID = message[4 + messageOffset];
@@ -426,7 +433,73 @@ int BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
 	}
 }
 
+int BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
+	int messageOffset = 0;
+	if (message[1] == oneControlID){
+		messageOffset = 1;
+	}else{
+		return -1;
+	}
 
+	if(message[3 + messageOffset] == MSG_LC_NA){
+		int port = message[5 + messageOffset];
+		printf("Turnout port: %d not available. Check cable connection", port);
+	}
+
+	if(message[3 + messageOffset] == MSG_LC_STAT){
+		int address = message[5 + messageOffset];
+		int direction = address % 2; // 1 - straight, 0 - turn
+
+		int turnID = (address - direction - 8) / 2;
+
+		turnouts[turnID].turnDir = (Turnout::turnDirection) direction;
+	}
+}
+
+int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
+
+	if(message[3] == MSG_NODETAB_COUNT){
+		nodeCount = message[4];
+		if(nodeCount == 0){
+			sendNodeTabMessage(); printf("another try to get NodeTab...\n"); fflush(stdout);
+		}
+		if(nodeCount != NODECOUNT){
+			printf("NOT ALL NODES AVAILABLE. CHECK CABLE CONNECTION OR PRESS RESET!\n");
+		}
+	}
+
+	if(message[3] == MSG_NODETAB){
+		int entryNumber = message[5];
+		int ID = message[11];
+
+		switch(ID){
+			case 0xDE:		gbmMasterID = entryNumber;
+							break;
+			case 0x76:		oneControlID = entryNumber;
+							break;
+			case 0x73:		oneOcID = entryNumber;
+							break;
+			default:		printf("Node not recognized. Make sure Node is specified in code. See processNodeTabMessage().\n");
+		}
+	}
+
+	if(message[3] == MSG_NODE_NA){
+		int entryNumber = message[4];
+
+		if(entryNumber == gbmMasterID){
+			printf("GBM Master not available.\n");
+		}
+		if(entryNumber == oneControlID){
+			printf("OneControl not available.\n");
+		}
+		if(entryNumber == oneOcID){
+			printf("OneOC not available.\n");
+		}
+		if(entryNumber != gbmMasterID | oneControlID | oneOcID){
+			printf("Unknown Node not available.\n");
+		}
+	}
+}
 
 int BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
 	bool activeFault = false;
@@ -472,16 +545,16 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 	switch(bidibMessageID){
 		case MSG_SYS_RESET:
 
-		case MSG_SYS_GET_MAGIC:		if(node == 0){
+		case MSG_SYS_GET_MAGIC:		if(node == gbmMasterID){
 										message[0] = 3;
-										message[1] = 0;
+										message[1] = gbmMasterID;
 										message[2] = msgNum = 0;
 										message[3] = bidibMessageID;
 										break;
 									}else{
 										message[0] = 4;
 										message[1] = node;
-										message[2] = 0;
+										message[2] = gbmMasterID;
 										message[3] = ++msgNum;
 										message[4] = bidibMessageID;
 										break;
@@ -495,7 +568,7 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 		case MSG_SYS_DISABLE:
 
 		case MSG_SYS_ENABLE:		message[0] = 3;
-									message[1] = 0;
+									message[1] = gbmMasterID;
 									message[2] = ++msgNum;
 									message[3] = bidibMessageID;
 									break;
@@ -519,7 +592,7 @@ void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction)
 
 	unsigned char message[] = {
 			12,
-			0x00,
+			gbmMasterID,
 			++msgNum,
 			MSG_CS_DRIVE,
 			locs[locID].id, //address low of loc
@@ -542,7 +615,7 @@ void BiDiBMessageHandler::sendFunctionStateMessage(int locID, int functionNumber
 
 	int functions = 0;
 
-	if(functionNumber == 0){ //light
+	if(functionNumber == locFunction::FLight){ //light
 		locs[locID].lightState = functionState;
 	}else{ //F1 - F4
 		locs[locID].functionState[functionNumber - 1] = functionState;
@@ -555,7 +628,7 @@ void BiDiBMessageHandler::sendFunctionStateMessage(int locID, int functionNumber
 
 	unsigned char message[] = {
 				12,
-				0x00,
+				gbmMasterID,
 				++msgNum,
 				MSG_CS_DRIVE,
 				locs[locID].id, //address low of loc
@@ -580,7 +653,7 @@ void BiDiBMessageHandler::sendStateMessage(char bidibStateID) {
 		case BIDIB_CS_STATE_GO:
 		case BIDIB_CS_STATE_STOP:
 		case BIDIB_CS_STATE_OFF: 	message[0] = 4;
-									message[1] = 0;
+									message[1] = gbmMasterID;
 									message[2] = ++msgNum;
 									message[3] = MSG_CS_SET_STATE;
 									message[4] = bidibStateID;
@@ -595,10 +668,10 @@ void BiDiBMessageHandler::sendStateMessage(char bidibStateID) {
 }
 
 void BiDiBMessageHandler::sendFeatureMessage(int node) {
-	if(node == 0){
+	if(node == gbmMasterID){
 		unsigned char message[] = {
 					3,
-					node,
+					gbmMasterID,
 					++msgNum,
 					MSG_FEATURE_GETALL
 		};
@@ -607,7 +680,7 @@ void BiDiBMessageHandler::sendFeatureMessage(int node) {
 		unsigned char message[] = {
 					4,
 					node,
-					0,
+					gbmMasterID,
 					++msgNum,
 					MSG_FEATURE_GETALL
 		};
@@ -631,7 +704,7 @@ void BiDiBMessageHandler::sendFeatureMessage(int node) {
 void BiDiBMessageHandler::sendNodeTabMessage() {
 	unsigned char message[] = {
 				3,
-				0x00,
+				gbmMasterID,
 				++msgNum,
 				MSG_NODETAB_GETALL
 	};
@@ -641,7 +714,7 @@ void BiDiBMessageHandler::sendNodeTabMessage() {
 	for (int i = 0; i < nodeCount; i++){
 		unsigned char message[] = {
 					3,
-					0x00,
+					gbmMasterID,
 					++msgNum,
 					MSG_NODETAB_GETNEXT
 		};
@@ -656,8 +729,8 @@ void BiDiBMessageHandler::sendTurnMessage(int turnID, bool direction) {
 
 	unsigned char onMessage[] = {
 				8,
-				0x01,
-				0x00,
+				oneControlID,
+				gbmMasterID,
 				++msgNum,
 				MSG_LC_OUTPUT,
 				0x00,
@@ -667,8 +740,8 @@ void BiDiBMessageHandler::sendTurnMessage(int turnID, bool direction) {
 
 	unsigned char offMessage[] = {
 				8,
-				0x01,
-				0x00,
+				oneControlID,
+				gbmMasterID,
 				++msgNum,
 				MSG_LC_OUTPUT,
 				0x00,
@@ -679,14 +752,12 @@ void BiDiBMessageHandler::sendTurnMessage(int turnID, bool direction) {
 	sendMessage(onMessage);
 	usleep(100*1000);
 	sendMessage(offMessage);
-
-	turnouts[turnID].turnDir = (Turnout::turnDirection) direction;
 }
 
 void BiDiBMessageHandler::sendBoostOnMessage() {
 	unsigned char message[] = {
 						4,
-						0x00,
+						gbmMasterID,
 						++msgNum,
 						MSG_BOOST_ON,
 						0x00
@@ -697,7 +768,7 @@ void BiDiBMessageHandler::sendBoostOnMessage() {
 void BiDiBMessageHandler::sendBoostOffMessage() {
 	unsigned char message[] = {
 						4,
-						0x00,
+						gbmMasterID,
 						++msgNum,
 						MSG_BOOST_OFF,
 						0x00

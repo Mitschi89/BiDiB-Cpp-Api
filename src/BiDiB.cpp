@@ -23,7 +23,7 @@ int main() {
 //	BiDiBMessageHandler bidibMessageHandler;
 
 	usleep(1000*1000);
-	while(true ){
+	while(api.isConnected()){
 //		if((bidibMessageHandler.loks[0].position >> 9)  & 1 ) {
 //			speed = 1;
 //			bidibMessageHandler.sendDriveMessage(11 , speed, 1);
@@ -48,7 +48,15 @@ int main() {
 //		usleep(1000*1000);
 //		usleep(10000*1000);
 
-		api.selfTestTurnout();
+//		api.selfTestTurnout();
+		api.setTurnoutState(Turnout::TC, Turnout::turn);
+
+		usleep(1000);
+		if(api.getTurnoutState(Turnout::TC) == Turnout::straight){
+			printf("turn is straight\n");
+		}else{
+			printf("turn is not straight\n");
+		}
 	}
 
 	printf("Programm Ende \n"); fflush(stdout);

@@ -9,7 +9,6 @@
 #include "BidibApi.h"
 
 BidibApi::BidibApi() {
-
 }
 
 BidibApi::~BidibApi() {
@@ -25,40 +24,44 @@ void BidibApi::powerOff() {
 }
 
 bool BidibApi::selfTestTurnout() {
-	setTurnoutState(Turnout::TNW, Turnout::straight);
-	usleep(1000*1000);
 	setTurnoutState(Turnout::TNW, Turnout::turn);
 	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TA1, Turnout::straight);
+	setTurnoutState(Turnout::TNW, Turnout::straight);
 	usleep(1000*1000);
+
 	setTurnoutState(Turnout::TA1, Turnout::turn);
 	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TNO, Turnout::straight);
+	setTurnoutState(Turnout::TA1, Turnout::straight);
 	usleep(1000*1000);
+
 	setTurnoutState(Turnout::TNO, Turnout::turn);
 	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TSO, Turnout::straight);
+	setTurnoutState(Turnout::TNO, Turnout::straight);
 	usleep(1000*1000);
+
 	setTurnoutState(Turnout::TSO, Turnout::turn);
 	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TA2, Turnout::straight);
+	setTurnoutState(Turnout::TSO, Turnout::straight);
 	usleep(1000*1000);
+
 	setTurnoutState(Turnout::TA2, Turnout::turn);
 	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TSW, Turnout::straight);
+	setTurnoutState(Turnout::TA2, Turnout::straight);
 	usleep(1000*1000);
+
 	setTurnoutState(Turnout::TSW, Turnout::turn);
 	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TC, Turnout::straight);
+	setTurnoutState(Turnout::TSW, Turnout::straight);
 	usleep(1000*1000);
+
 	setTurnoutState(Turnout::TC, Turnout::turn);
 	usleep(1000*1000);
+	setTurnoutState(Turnout::TC, Turnout::straight);
+	usleep(1000*1000);
+
+	printf("All Turnouts should be straight!\n");
+
+	return true;
 }
 
 int BidibApi::getNumberOfLocs() {
@@ -127,6 +130,10 @@ Segment::segmentID* BidibApi::geLocPosition(int locID) {
 
 void BidibApi::setTurnoutState(Turnout::turnoutID turnID, Turnout::turnDirection turnDir) {
 	bidibMessageHandler.sendTurnMessage(turnID, turnDir);
+}
+
+bool BidibApi::isConnected() {
+	return bidibMessageHandler.isConnected();
 }
 
 int BidibApi::getLocsOnSegment(Segment::segmentID segID) {

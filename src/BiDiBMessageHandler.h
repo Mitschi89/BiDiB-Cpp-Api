@@ -16,11 +16,16 @@
 #define SHOWBMMULTI			0
 #define SHOWALLBMMESSAGES	1
 #define SHOWFEATURE			1
+#define SHOWTURNOUTSTATE	1
+#define SHOWNODETAB			1
+
+#define NODECOUNT			3
 
 
 #include "bidib_messages.h"
 #include "Loc.h"
 #include "Turnout.h"
+#include "locFunction.h"
 #include <stdio.h>
 #include "Serial.h"
 #include <thread>
@@ -47,7 +52,12 @@ public:
 	char* getMessageType(int type);
 	void printMessage(unsigned char *message);
 
-//private:
+	Loc locs [10];
+	Turnout turnouts[7];
+	int locCount = 0;
+	int locAllPositions = 0;
+
+private:
 	const char* convertComPortNumber(int comPortNumber);
 	int processMessage(unsigned char *message, int length);
 	int processBM(unsigned char *message);
@@ -56,18 +66,25 @@ public:
 	int processlocMessage(unsigned char *message);
 	int processFaultMessage(unsigned char *message);
 	int processFunctionMessage(unsigned char *message);
+	int processTurnoutStateMessage(unsigned char *message);
+	int processNodeTabMessage(unsigned char *message);
 
 	int setLocPosition(int id, int position, bool occupied);
 
 	Serial* serialPort;
 	std::thread receiverThread;
+
+	bool connected = false;
+
 	int nodeCount = 0;
 	int featureCount = 0;
+
+	int gbmMasterID = 0;
+	int oneOcID = 0;
+	int oneControlID = 0;
+
 	char msgNum = 0;
-	Loc locs [10];
-	Turnout turnouts[7];
-	int locCount = 0;
-	int locAllPositions = 0;
+
 	bool fault[6] = {false};
 
 	unsigned char crc_array[256] = {
