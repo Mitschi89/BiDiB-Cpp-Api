@@ -49,10 +49,10 @@ int main() {
 //		usleep(10000*1000);
 
 //		api.selfTestTurnout();
-		api.setTurnoutState(Turnout::TC, Turnout::turn);
+		api.setTurnoutState(Turnout::TC, Turnout::bendOff);
 
 		usleep(1000);
-		if(api.getTurnoutState(Turnout::TC) == Turnout::straight){
+		if(api.getTurnoutState(Turnout::TC) == Turnout::straightOn){
 			printf("turn is straight\n");
 		}else{
 			printf("turn is not straight\n");

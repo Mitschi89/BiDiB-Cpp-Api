@@ -13,9 +13,9 @@ class Turnout {
 public:
 
 	enum turnDirection{
-		straight = 1,
-		turn = 0
-	} turnDir = straight;
+		straightOn = 1,
+		bendOff = 0
+	} turnDir = straightOn;
 
 	enum turnoutID{	TNW = 0,
 			TSW = 1,

@@ -289,7 +289,10 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 											}
 											processNodeTabMessage(msg);
 											break;
-			case MSG_SYS_ERROR:
+			case MSG_SYS_ERROR:				if(SHOWERRORMESSAGE){
+												printMessage(msg);
+											}
+											break;
 			case MSG_BM_DYN_STATE:
 			case MSG_BM_CONFIDENCE:
 			case MSG_CS_DRIVE_ACK: 			if(SHOWSYSMESSAGES){

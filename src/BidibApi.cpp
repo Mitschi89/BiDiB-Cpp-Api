@@ -24,39 +24,39 @@ void BidibApi::powerOff() {
 }
 
 bool BidibApi::selfTestTurnout() {
-	setTurnoutState(Turnout::TNW, Turnout::turn);
+	setTurnoutState(Turnout::TNW, Turnout::bendOff);
 	usleep(1000*1000);
-	setTurnoutState(Turnout::TNW, Turnout::straight);
-	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TA1, Turnout::turn);
-	usleep(1000*1000);
-	setTurnoutState(Turnout::TA1, Turnout::straight);
+	setTurnoutState(Turnout::TNW, Turnout::straightOn);
 	usleep(1000*1000);
 
-	setTurnoutState(Turnout::TNO, Turnout::turn);
+	setTurnoutState(Turnout::TA1, Turnout::bendOff);
 	usleep(1000*1000);
-	setTurnoutState(Turnout::TNO, Turnout::straight);
-	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TSO, Turnout::turn);
-	usleep(1000*1000);
-	setTurnoutState(Turnout::TSO, Turnout::straight);
+	setTurnoutState(Turnout::TA1, Turnout::straightOn);
 	usleep(1000*1000);
 
-	setTurnoutState(Turnout::TA2, Turnout::turn);
+	setTurnoutState(Turnout::TNO, Turnout::bendOff);
 	usleep(1000*1000);
-	setTurnoutState(Turnout::TA2, Turnout::straight);
-	usleep(1000*1000);
-
-	setTurnoutState(Turnout::TSW, Turnout::turn);
-	usleep(1000*1000);
-	setTurnoutState(Turnout::TSW, Turnout::straight);
+	setTurnoutState(Turnout::TNO, Turnout::straightOn);
 	usleep(1000*1000);
 
-	setTurnoutState(Turnout::TC, Turnout::turn);
+	setTurnoutState(Turnout::TSO, Turnout::bendOff);
 	usleep(1000*1000);
-	setTurnoutState(Turnout::TC, Turnout::straight);
+	setTurnoutState(Turnout::TSO, Turnout::straightOn);
+	usleep(1000*1000);
+
+	setTurnoutState(Turnout::TA2, Turnout::bendOff);
+	usleep(1000*1000);
+	setTurnoutState(Turnout::TA2, Turnout::straightOn);
+	usleep(1000*1000);
+
+	setTurnoutState(Turnout::TSW, Turnout::bendOff);
+	usleep(1000*1000);
+	setTurnoutState(Turnout::TSW, Turnout::straightOn);
+	usleep(1000*1000);
+
+	setTurnoutState(Turnout::TC, Turnout::bendOff);
+	usleep(1000*1000);
+	setTurnoutState(Turnout::TC, Turnout::straightOn);
 	usleep(1000*1000);
 
 	printf("All Turnouts should be straight!\n");
