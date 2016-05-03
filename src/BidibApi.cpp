@@ -64,6 +64,34 @@ bool BidibApi::selfTestTurnout() {
 	return true;
 }
 
+bool BidibApi::selfTestTrack() {
+	setAllTurnoutsState(Turnout::straightOn);
+	printf("You can place the loc now on segment A2 in direction TA2 and start ... \n");
+	while(getNumberOfLocs() == 0){
+		usleep(1000*1000);
+	}
+
+	if(getNumberOfLocs() > 1){
+		printf("To much locs on track, please place only ONE loc on segment A2 in direction TA2 and start again.\n");
+		return false;
+	}
+
+	int locID = getNumberOfLocs() - 1;
+
+	while(!isLocOnPosition(locID , Segment::A2)){
+		usleep(1000*1000);
+	}
+
+	for(int i = 10; i > 0 ; i--){
+		printf("Loc starts in %d \n" , i);
+		usleep(1000 * 1000);
+	}
+	printf("Loc starts!\n");
+	setLocSpeed(locID, 25, true);
+
+	return true;
+}
+
 int BidibApi::getNumberOfLocs() {
 	return bidibMessageHandler.locCount;
 }
@@ -108,10 +136,11 @@ int BidibApi::getAllTurnoutStates() {
 	return states;
 }
 
-Segment::segmentID* BidibApi::geLocPosition(int locID) {
-	Segment::segmentID segID[10];
-	for(int i = 0; i < 10; i++){
-		segID[i] = (Segment::DEFAULT);
+std::vector<Segment::segmentID> BidibApi::getLocPosition(int locID) {
+	std::vector<Segment::segmentID> segID (MAXNUMBEROFSEGEMENTSWITHLOC);
+
+	for(int i = 0; i < MAXNUMBEROFSEGEMENTSWITHLOC; i++){
+		segID[i] = Segment::DEFAULT;
 	}
 
 	int index = 0;
@@ -132,8 +161,29 @@ void BidibApi::setTurnoutState(Turnout::turnoutID turnID, Turnout::turnDirection
 	bidibMessageHandler.sendTurnMessage(turnID, turnDir);
 }
 
+void BidibApi::setAllTurnoutsState(Turnout::turnDirection turnDir) {
+	setTurnoutState(Turnout::TNW, turnDir);
+	setTurnoutState(Turnout::TA1, turnDir);
+	setTurnoutState(Turnout::TNO, turnDir);
+	setTurnoutState(Turnout::TSO, turnDir);
+	setTurnoutState(Turnout::TA2, turnDir);
+	setTurnoutState(Turnout::TSW, turnDir);
+	setTurnoutState(Turnout::TC, turnDir);
+}
+
 bool BidibApi::isConnected() {
 	return bidibMessageHandler.isConnected();
+}
+
+bool BidibApi::isLocOnPosition(int locID, Segment::segmentID segID) {
+	std::vector<Segment::segmentID> segments (MAXNUMBEROFSEGEMENTSWITHLOC);
+	segments = getLocPosition(locID);
+	for(int i = 0; i < MAXNUMBEROFSEGEMENTSWITHLOC; i++){
+		if(segments[i] == segID){
+			return true;
+		}
+	}
+	return false;
 }
 
 int BidibApi::getLocsOnSegment(Segment::segmentID segID) {

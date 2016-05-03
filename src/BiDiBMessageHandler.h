@@ -8,15 +8,15 @@
 #ifndef BIDIBMESSAGEHANDLER_H_
 #define BIDIBMESSAGEHANDLER_H_
 
-#define SHOWSYSMESSAGES		1
+#define SHOWSYSMESSAGES		0
 #define SHOWERRORMESSAGE	1
 #define SHOWMAGIC 			1
 #define SHOWDIAGNOSTIC		0
-#define	SHOWBMMessages		1
+#define	SHOWBMMessages		0
 #define SHOWBMMULTI			0
-#define SHOWALLBMMESSAGES	1
-#define SHOWFEATURE			1
-#define SHOWTURNOUTSTATE	1
+#define SHOWALLBMMESSAGES	0
+#define SHOWFEATURE			0
+#define SHOWTURNOUTSTATE	0
 #define SHOWNODETAB			1
 
 #define NODECOUNT			3
@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include "Serial.h"
 #include <thread>
+
 
 class BiDiBMessageHandler {
 public:
