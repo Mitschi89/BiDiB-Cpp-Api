@@ -99,6 +99,9 @@ bool BiDiBMessageHandler::initBidib() {
 		printf("Sys_enable gesendet... num: %X\n", msgNum);
 		usleep(1000*1000);
 
+		sendGetLocsMessage();
+		printf("getLocs gesendet... num: %X\n", msgNum);
+
 		fflush(stdout);
 
 		return true;
@@ -292,6 +295,7 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 			case MSG_SYS_ERROR:				if(SHOWERRORMESSAGE){
 												printMessage(msg);
 											}
+											processErrorMessage(msg);
 											break;
 			case MSG_BM_DYN_STATE:
 			case MSG_BM_CONFIDENCE:
@@ -501,6 +505,36 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 		if(entryNumber != gbmMasterID | oneControlID | oneOcID){
 			printf("Unknown Node not available.\n");
 		}
+	}
+}
+
+int BiDiBMessageHandler::processErrorMessage(unsigned char* message) {
+	int messageOffset = 0;
+	if (message[1] != gbmMasterID){
+		messageOffset = 1;
+	}
+
+	int errorType = message[4 + messageOffset];
+
+	switch(errorType){
+		case BIDIB_ERR_NONE:		printf("NO ERROR\n");
+									break;
+		case BIDIB_ERR_TXT:			printf("Text ERROR\n");
+									break;
+		case BIDIB_ERR_CRC:			printf("CRC ERROR\n");
+									break;
+		case BIDIB_ERR_SIZE:		printf("Size ERROR\n");
+									break;
+		case BIDIB_ERR_SEQUENCE:	printf("Sequence ERROR\n");
+									break;
+		case BIDIB_ERR_BUS:			printf("Bus ERROR\n");
+									break;
+		case BIDIB_ERR_OVERRUN:		printf("Overrun ERROR\n");
+									break;
+		case BIDIB_ERR_HW:			printf("Hardware ERROR\n");
+									break;
+		default:					printf("Unknown ERROR\n");
+
 	}
 }
 
@@ -779,4 +813,14 @@ void BiDiBMessageHandler::sendBoostOffMessage() {
 	sendMessage(message);
 }
 
-
+void BiDiBMessageHandler::sendGetLocsMessage() {
+	unsigned char message[] = {
+						5,
+						gbmMasterID,
+						++msgNum,
+						MSG_BM_ADDR_GET_RANGE,
+						0x00,
+						31
+						};
+	sendMessage(message);
+}
