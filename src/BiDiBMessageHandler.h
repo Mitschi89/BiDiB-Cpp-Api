@@ -49,6 +49,7 @@ public:
 	void sendBoostOnMessage();
 	void sendBoostOffMessage();
 	void sendFunctionStateMessage(int locID, int functionNumber, bool functionState);
+	void sendGetLocsMessage();
 	bool isConnected();
 	char* getMessageType(int type);
 	void printMessage(unsigned char *message);
@@ -69,6 +70,7 @@ private:
 	int processFunctionMessage(unsigned char *message);
 	int processTurnoutStateMessage(unsigned char *message);
 	int processNodeTabMessage(unsigned char *message);
+	int processErrorMessage(unsigned char *message);
 
 	int setLocPosition(int id, int position, bool occupied);
 
