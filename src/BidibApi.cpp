@@ -65,6 +65,70 @@ bool BidibApi::selfTestTurnout() {
 }
 
 bool BidibApi::selfTestTrack() {
+
+	std::vector<Segment::segmentID> sequence;
+		sequence.push_back(Segment::A2);
+		sequence.push_back(Segment::TA2);
+		sequence.push_back(Segment::TSW);
+		sequence.push_back(Segment::W3);
+		sequence.push_back(Segment::W2);
+		sequence.push_back(Segment::W1);
+		sequence.push_back(Segment::TNW);
+		sequence.push_back(Segment::N1);
+		sequence.push_back(Segment::N2);
+		sequence.push_back(Segment::N3);
+		sequence.push_back(Segment::TNO);
+		sequence.push_back(Segment::O1);
+		sequence.push_back(Segment::O2);
+		sequence.push_back(Segment::O3);
+		sequence.push_back(Segment::TSO);
+		sequence.push_back(Segment::S3);
+		sequence.push_back(Segment::S2);
+		sequence.push_back(Segment::S1);
+		sequence.push_back(Segment::TSW);
+		sequence.push_back(Segment::W3);
+		sequence.push_back(Segment::W2);
+		sequence.push_back(Segment::W1);
+		sequence.push_back(Segment::TNW);
+		sequence.push_back(Segment::NW1);
+		sequence.push_back(Segment::NW2);
+		sequence.push_back(Segment::NW3);
+		sequence.push_back(Segment::TC);
+		sequence.push_back(Segment::SO1);
+		sequence.push_back(Segment::SO2);
+		sequence.push_back(Segment::SO3);
+		sequence.push_back(Segment::TSO);
+		sequence.push_back(Segment::O3);
+		sequence.push_back(Segment::O2);
+		sequence.push_back(Segment::O1);
+		sequence.push_back(Segment::TNO);
+		sequence.push_back(Segment::TA1);
+		sequence.push_back(Segment::NO1);
+		sequence.push_back(Segment::NO2);
+		sequence.push_back(Segment::TC);
+		sequence.push_back(Segment::SW1);
+		sequence.push_back(Segment::SW2);
+		sequence.push_back(Segment::TA2);
+		sequence.push_back(Segment::TSW);
+		sequence.push_back(Segment::W3);
+		sequence.push_back(Segment::W2);
+		sequence.push_back(Segment::W1);
+		sequence.push_back(Segment::TNW);
+		sequence.push_back(Segment::NW1);
+		sequence.push_back(Segment::NW2);
+		sequence.push_back(Segment::NW3);
+		sequence.push_back(Segment::TC);
+		sequence.push_back(Segment::SO1);
+		sequence.push_back(Segment::SO2);
+		sequence.push_back(Segment::SO3);
+		sequence.push_back(Segment::TSO);
+		sequence.push_back(Segment::O3);
+		sequence.push_back(Segment::O2);
+		sequence.push_back(Segment::O1);
+		sequence.push_back(Segment::TNO);
+		sequence.push_back(Segment::TA1);
+		sequence.push_back(Segment::A1);
+
 	setAllTurnoutsState(Turnout::straightOn);
 	printf("You can place the loc now on segment A2 in direction TA2 and start ... \n");
 	while(getNumberOfLocs() == 0){
@@ -77,17 +141,67 @@ bool BidibApi::selfTestTrack() {
 	}
 
 	int locID = getNumberOfLocs() - 1;
+	int locSpeed = 100 ;
 
-	while(!isLocOnPosition(locID , Segment::A2)){
+	int sequenceIterator = 0;
+	int o2Iterator = 0;
+
+	Segment::segmentID nextPosition = sequence.at(sequenceIterator++);
+
+	while(!isLocOnPosition(locID , nextPosition)){
 		usleep(1000*1000);
 	}
+
+	Segment::segmentID currentPosition = nextPosition;
+	nextPosition = sequence.at(sequenceIterator++);
 
 	for(int i = 10; i > 0 ; i--){
 		printf("Loc starts in %d \n" , i);
 		usleep(1000 * 1000);
 	}
 	printf("Loc starts!\n");
-	setLocSpeed(locID, 25, true);
+
+	setLocSpeed(locID, locSpeed, true);
+
+	std::vector<Segment::segmentID> positions (MAXNUMBEROFSEGEMENTSWITHLOC);
+	positions = getLocPosition(locID);
+
+	while(!isLocOnPosition(locID, sequence.back())){
+
+		if(positions == getLocPosition(locID)){
+			usleep(1000);
+		}else{
+			positions = getLocPosition(locID);
+			if(isLocOnPosition(locID, nextPosition)){
+				currentPosition = nextPosition;
+				nextPosition = sequence.at(sequenceIterator++);
+
+				if(currentPosition == Segment::S1){
+					setTurnoutState(Turnout::TNW, Turnout::bendOff);
+				}
+
+				if(currentPosition == Segment::SO3){
+					setTurnoutState(Turnout::TNO, Turnout::bendOff);
+					setTurnoutState(Turnout::TA1, Turnout::bendOff);
+				}
+
+				if(currentPosition == Segment::O2){
+					if(++o2Iterator == 3){
+						setTurnoutState(Turnout::TA1, Turnout::straightOn);
+					}
+				}
+			}else{
+				if(!isLocOnPosition(locID, currentPosition)){
+					printf("ERROR segment Number: %d not found\n", nextPosition);
+					setLocSpeed(locID, 1, true);
+					return false;
+				}
+			}
+		}
+	}
+
+	setLocSpeed(locID, 1, true);
+
 
 	return true;
 }
