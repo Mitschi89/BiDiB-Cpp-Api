@@ -1,9 +1,10 @@
-/*
- * Segment.h
- *
- *  Created on: Apr 28, 2016
- *      Author: misc0894
- */
+//============================================================================
+// Name        	: Segment.h
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: creates a segment class with segment IDs
+//============================================================================
 
 #ifndef SEGMENT_H_
 #define SEGMENT_H_

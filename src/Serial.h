@@ -1,9 +1,10 @@
-/*
- * Serial.h
- *
- *  Created on: 22.01.2016
- *      Author: Steffi
- */
+//============================================================================
+// Name        	: Serial.h
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: Implements basic serial communication
+//============================================================================
 
 #ifndef SERIAL_H_
 #define SERIAL_H_
@@ -15,7 +16,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-//#include <windows.h>
 
 #define BAUDRATE B115200
 
@@ -26,7 +26,6 @@ protected:
 
 public:
 		//Initialize Serial communication with the given COM port
-//      Serial();
 		Serial(const char *portName);
 		//Close the connection
 		~Serial();

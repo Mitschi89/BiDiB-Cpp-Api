@@ -1,25 +1,30 @@
-/*
- * BiDiBSerial.h
- *
- *  Created on: 01.02.2016
- *      Author: Steffi
- */
+//============================================================================
+// Name        	: BiDiBMessageHandler.h
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: processes all incoming data and saves them, sends data via serial connection
+//============================================================================
 
 #ifndef BIDIBMESSAGEHANDLER_H_
 #define BIDIBMESSAGEHANDLER_H_
 
 #define SHOWSYSMESSAGES		0
-#define SHOWERRORMESSAGE	1
-#define SHOWMAGIC 			1
+#define SHOWERRORMESSAGE	0
+#define SHOWMAGIC 			0
 #define SHOWDIAGNOSTIC		0
-#define	SHOWBMMessages		1
+#define	SHOWBMMessages		0
 #define SHOWBMMULTI			0
-#define SHOWALLBMMESSAGES	1
+#define SHOWALLBMMESSAGES	0
 #define SHOWFEATURE			0
 #define SHOWTURNOUTSTATE	0
-#define SHOWNODETAB			1
+#define SHOWNODETAB			0
 
 #define NODECOUNT			3
+
+#define MAXNUMBEROFSEGEMENTSWITHLOC 10 //max Number of segment a loc can be on the track
+#define MAXNUMBEROFTURNOUTS 7
+#define MAXNUMBEROFSEGMENTS 32
 
 
 #include "bidib_messages.h"
@@ -35,11 +40,12 @@ class BiDiBMessageHandler {
 public:
 	BiDiBMessageHandler();
 	~BiDiBMessageHandler();
+
 	bool initSerialPort (const char *portName);
 	bool initSerialPort(int comPortNumber);
 	bool initBidib();
-	void getMessage();
-	void sendMessage(unsigned char *message);
+
+
 	void sendSystemMessage(int node, char bidibMessageID);
 	void sendNodeTabMessage();
 	void sendFeatureMessage(int node);
@@ -52,15 +58,15 @@ public:
 	void sendFunctionStateMessage(int locID, int functionNumber, bool functionState);
 	void sendGetLocsMessage();
 	bool isConnected();
-	char* getMessageType(int type);
-	void printMessage(unsigned char *message);
 
-	Loc locs [10];
-	Turnout turnouts[7];
+	Loc locs [MAXNUMBEROFSEGEMENTSWITHLOC];
+	Turnout turnouts[MAXNUMBEROFTURNOUTS];
 	int locCount = 0;
 	int locAllPositions = 0;
 
 private:
+	void getMessage();
+	void sendMessage(unsigned char *message);
 	const char* convertComPortNumber(int comPortNumber);
 	int processMessage(unsigned char *message, int length);
 	int processBM(unsigned char *message);
@@ -74,6 +80,9 @@ private:
 	int processErrorMessage(unsigned char *message);
 
 	int setLocPosition(int id, int position, bool occupied);
+
+	char* getMessageType(int type);
+	void printMessage(unsigned char *message);
 
 	Serial* serialPort;
 	std::thread receiverThread;
@@ -125,7 +134,6 @@ private:
 	      0x74, 0x2a, 0xc8, 0x96, 0x15, 0x4b, 0xa9, 0xf7,
 	      0xb6, 0xe8, 0x0a, 0x54, 0xd7, 0x89, 0x6b, 0x35,
 	      };
-
 };
 
 #endif /* BIDIBMESSAGEHANDLER_H_ */

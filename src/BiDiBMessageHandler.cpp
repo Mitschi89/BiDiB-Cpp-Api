@@ -1,9 +1,10 @@
-/*
- * BiDiBSerial.cpp
- *
- *  Created on: 01.02.2016
- *      Author: Steffi
- */
+//============================================================================
+// Name        	: BiDiBMessageHandler.cpp
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: processes all incoming data and saves them, sends data via serial connection
+//============================================================================
 
 #include "BiDiBMessageHandler.h"
 
@@ -21,7 +22,7 @@ BiDiBMessageHandler::BiDiBMessageHandler() {
 		return;
 	}
 
-	for (int i=0; i<0; i++){
+	for (int i = 0; i < MAXNUMBEROFTURNOUTS; i++){
 		turnouts[i].ID = (Turnout::turnoutID) i;
 	}
 }
@@ -59,48 +60,35 @@ bool BiDiBMessageHandler::initSerialPort(int comPortNumber) {
 
 bool BiDiBMessageHandler::initBidib() {
 	if(isConnected()){
+		printf("Initializing BiDiB-Protocol. "); fflush(stdout);
+
 		sendSystemMessage(gbmMasterID, MSG_SYS_GET_MAGIC);
-		printf("Magic gesendet... num: %X\n", msgNum);
-		usleep(1000*1000);
+		printf(". "); fflush(stdout);
+//		printf("Magic gesendet... num: %X\n", msgNum);
+		usleep(1000*100);
 
 		sendSystemMessage(gbmMasterID, MSG_SYS_RESET);
-		usleep(2000*1000);
-		printf("Reset gesendet... num: %X\n");
+		printf(". "); fflush(stdout);
+		usleep(1000*1100);
+//		printf("Reset gesendet... num: %X\n");
 
 		sendNodeTabMessage();
-		printf("Get_NodeTab gesendet... num: %X\n", msgNum);
-		usleep(1000*1000);
-
-//		for(int i = 1; i < nodeCount ; i++){
-//			sendSystemMessage(i, MSG_SYS_GET_MAGIC);
-//			printf("Magic gesendet... num: %X\n", msgNum);
-//			usleep(1000*1000);
-//
-////			sendSystemMessage(i, MSG_SYS_RESET);
-////			usleep(2000*1000);
-////			printf("Reset gesendet... num: %X\n");
-//		}
-
-//		for(int i = 0; i < 3; i++){
-//			sendFeatureMessage(i);
-//			printf("Get Features gesendet... num: %X\n", msgNum);
-//			usleep(1000*1000);
-//		}
-
-//		sendSystemMessage(MSG_DBM);
-//		printf("Msg_DBM gesendet... num: %X\n", msgNum);
-//		usleep(1000*1000);
+		printf(". "); fflush(stdout);
+//		printf("Get_NodeTab gesendet... num: %X\n", msgNum);
+		usleep(1000*100);
 
 		if(nodeCount != NODECOUNT){
 			return false;
 		}
 
 		sendSystemMessage(gbmMasterID, MSG_SYS_ENABLE);
-		printf("Sys_enable gesendet... num: %X\n", msgNum);
-		usleep(1000*1000);
+		printf(". "); fflush(stdout);
+//		printf("Sys_enable gesendet... num: %X\n", msgNum);
+		usleep(1000*100);
 
 		sendGetLocsMessage();
-		printf("getLocs gesendet... num: %X\n", msgNum);
+		printf(". \n"); fflush(stdout);
+//		printf("getLocs gesendet... num: %X\n", msgNum);
 
 		fflush(stdout);
 
@@ -294,8 +282,8 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 											break;
 			case MSG_SYS_ERROR:				if(SHOWERRORMESSAGE){
 												printMessage(msg);
+												processErrorMessage(msg);
 											}
-											processErrorMessage(msg);
 											break;
 			case MSG_BM_DYN_STATE:
 			case MSG_BM_CONFIDENCE:
@@ -305,8 +293,9 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 											processOther(msg);
 											break;
 
-			default: 						printMessage(msg);
-	//										processOther(message, length);
+			default: 						if(SHOWSYSMESSAGES){
+												printMessage(msg);
+											}
 											break;
 		}
 		maxLength += msgLen;
@@ -321,7 +310,7 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 
 	if(message[3 + messageOffset] == MSG_BM_FREE){
 		if(!messageOffset){
-			printf("Position: %d free \n", message[4 + messageOffset]);
+//			printf("Position: %d free \n", message[4 + messageOffset]);
 		}else{
 			processFaultMessage(message);
 		}
@@ -329,7 +318,7 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 
 	if(message[3 + messageOffset] == MSG_BM_OCC){
 		if(!messageOffset){
-			printf("Position: %d occupied \n", message[4 + messageOffset]);
+//			printf("Position: %d occupied \n", message[4 + messageOffset]);
 		}else{
 			processFaultMessage(message);
 		}
@@ -502,7 +491,7 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 		if(entryNumber == oneOcID){
 			printf("OneOC not available.\n");
 		}
-		if(entryNumber != gbmMasterID | oneControlID | oneOcID){
+		if(entryNumber != (gbmMasterID | oneControlID | oneOcID)){
 			printf("Unknown Node not available.\n");
 		}
 	}

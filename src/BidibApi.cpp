@@ -1,10 +1,10 @@
-/*
- * BiDiBAPI.cpp
- *
- *  Created on: Feb 23, 2016
- *      Author: misc0894
- */
-
+//============================================================================
+// Name        	: BidibApi.cpp
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: BiDiB API
+//============================================================================
 
 #include "BidibApi.h"
 
@@ -242,12 +242,14 @@ Turnout::turnDirection BidibApi::getTurnoutState(Turnout::turnoutID turnID) {
 	return bidibMessageHandler.turnouts[turnID].turnDir;
 }
 
-int BidibApi::getAllTurnoutStates() {
-	int states = 0;
-	for(int i=0; i<7; i++){
-		states |= (bidibMessageHandler.turnouts[i].turnDir << i);
+std::vector<Turnout> BidibApi::getAllTurnoutStates() {
+	std::vector<Turnout> turnouts (MAXNUMBEROFTURNOUTS);
+
+	for(int i = 0; i < MAXNUMBEROFTURNOUTS; i++){
+		turnouts.push_back(bidibMessageHandler.turnouts[i]);
 	}
-	return states;
+
+	return turnouts;
 }
 
 std::vector<Segment::segmentID> BidibApi::getLocPosition(int locID) {
@@ -261,7 +263,7 @@ std::vector<Segment::segmentID> BidibApi::getLocPosition(int locID) {
 	int postion = bidibMessageHandler.locs[locID].position;
 
 	if(locID < bidibMessageHandler.locCount){
-		for(int i = 0; i <= 31; i++){
+		for(int i = 0; i < MAXNUMBEROFSEGMENTS; i++){
 			if(postion & (1 << i)){
 				segID[index] = (Segment::segmentID) i;
 				index++;
@@ -276,13 +278,9 @@ void BidibApi::setTurnoutState(Turnout::turnoutID turnID, Turnout::turnDirection
 }
 
 void BidibApi::setAllTurnoutsState(Turnout::turnDirection turnDir) {
-	setTurnoutState(Turnout::TNW, turnDir);
-	setTurnoutState(Turnout::TA1, turnDir);
-	setTurnoutState(Turnout::TNO, turnDir);
-	setTurnoutState(Turnout::TSO, turnDir);
-	setTurnoutState(Turnout::TA2, turnDir);
-	setTurnoutState(Turnout::TSW, turnDir);
-	setTurnoutState(Turnout::TC, turnDir);
+	for(int i = 0; i < MAXNUMBEROFTURNOUTS; i++){
+		setTurnoutState((Turnout::turnoutID) i , turnDir);
+	}
 }
 
 bool BidibApi::isConnected() {

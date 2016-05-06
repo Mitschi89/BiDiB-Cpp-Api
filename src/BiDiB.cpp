@@ -1,9 +1,9 @@
 //============================================================================
-// Name        : BiDiB.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
+// Name        	: BiDiB.cpp
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: Example program
 //============================================================================
 
 #include <iostream>
@@ -21,7 +21,6 @@ int main() {
 	printf("Program Start\n\n"); fflush(stdout);
 	BidibApi api;
 
-//	usleep(1000*1000);
 	while(api.isConnected()){
 
 		if(api.selfTestTrack()){

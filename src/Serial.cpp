@@ -1,9 +1,10 @@
-/*
- * Serial.cpp
- *
- *  Created on: 22.01.2016
- *      Author: Steffi
- */
+//============================================================================
+// Name        	: Serial.cpp
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: Implements basic serial communication
+//============================================================================
 
 #include "Serial.h"
 
@@ -12,22 +13,21 @@ Serial::Serial(const char *portName){
 	struct termios term_attr;
 
 	if(fd == -1){
-		printf("open_port: Unable to open %s \n", portName);
+		printf("Open_port: Unable to open %s \n", portName);
 	}
 	else{
 		fcntl(fd, F_SETFL, 0);
-		printf("port is open.\n");
+		printf("Port is open.\n");
 	}
 
 	if (tcgetattr(fd, &term_attr) != 0)
 	{
-		printf("could not get attributes.\n");
+		printf("Could not get attributes.\n");
 		return;
 	}
 	term_attr.c_cflag = BAUDRATE | CS8 | CRTSCTS | CREAD | CLOCAL;
 	term_attr.c_iflag = 0;
 	term_attr.c_oflag = OPOST;
-//	term_attr.c_oflag = 0;
 	term_attr.c_lflag = 0;
 
 	tcsetattr(fd, TCSAFLUSH, &term_attr);

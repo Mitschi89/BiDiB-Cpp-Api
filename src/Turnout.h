@@ -1,9 +1,10 @@
-/*
- * Weiche.h
- *
- *  Created on: 17.02.2016
- *      Author: Steffi
- */
+//============================================================================
+// Name        	: Turnout.h
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: basic class for turnout IDs and directions
+//============================================================================
 
 #ifndef TURNOUT_H_
 #define TURNOUT_H_

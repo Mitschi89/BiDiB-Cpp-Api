@@ -1,9 +1,10 @@
-/*
- * locFunction.h
- *
- *  Created on: May 2, 2016
- *      Author: misc0894
- */
+//============================================================================
+// Name        	: Loc.h
+// Author      	: Michael Scharfenberg
+// Version  	: 1.0
+// Date			: 06.05.2016
+// Description 	: creates a Loc functions
+//============================================================================
 
 #ifndef LOCFUNCTION_H_
 #define LOCFUNCTION_H_
