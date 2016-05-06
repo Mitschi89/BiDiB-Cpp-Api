@@ -12,9 +12,9 @@
 #define SHOWERRORMESSAGE	1
 #define SHOWMAGIC 			1
 #define SHOWDIAGNOSTIC		0
-#define	SHOWBMMessages		0
+#define	SHOWBMMessages		1
 #define SHOWBMMULTI			0
-#define SHOWALLBMMESSAGES	0
+#define SHOWALLBMMESSAGES	1
 #define SHOWFEATURE			0
 #define SHOWTURNOUTSTATE	0
 #define SHOWNODETAB			1
@@ -44,6 +44,7 @@ public:
 	void sendNodeTabMessage();
 	void sendFeatureMessage(int node);
 	void sendDriveMessage(int locID, int speed, bool direction);
+	void sendDriveMessage(int locID);
 	void sendStateMessage(char bidibStateID);
 	void sendTurnMessage(int turnID, bool direction);
 	void sendBoostOnMessage();

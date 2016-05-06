@@ -27,7 +27,7 @@ public:
 	void powerOn(); //turns Booster Power on
 	void powerOff(); //turns Booster Power off
 
-	bool isConnected();
+	bool isConnected(); //returns connection status
 
 	bool selfTestTurnout(); // switches all turnouts to check the functionality
 	bool selfTestTrack(); // tests all segments on Track, needs ONE locomotvie on track on A2, direction from A2 to TA2
@@ -48,6 +48,8 @@ public:
 	void setAllTurnoutsState(Turnout::turnDirection turnDir);
 
 	int getLocsOnSegment(Segment::segmentID segID); //returns number of locs on a segment
+
+
 
 };
 

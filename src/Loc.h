@@ -17,7 +17,7 @@ public:
 	uint32_t position = 0;
 	int speed = 0;
 	bool direction = 0; //true == forward
-	bool functionState[5] = {false};
+	bool functionState[4] = {false};
 	bool lightState = false;
 
 	Loc();

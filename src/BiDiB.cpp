@@ -18,37 +18,12 @@
 using namespace std;
 
 int main() {
-	printf("Programm Start\n\n"); fflush(stdout);
+	printf("Program Start\n\n"); fflush(stdout);
 	BidibApi api;
-//	BiDiBMessageHandler bidibMessageHandler;
 
-	usleep(1000*1000);
+//	usleep(1000*1000);
 	while(api.isConnected()){
-//		if((bidibMessageHandler.loks[0].position >> 9)  & 1 ) {
-//			speed = 1;
-//			bidibMessageHandler.sendDriveMessage(11 , speed, 1);
-//			usleep(10000*1000);
-//			speed = 50;
-//			bidibMessageHandler.sendDriveMessage(11, speed, 1);
-//			usleep(2000*1000);
-//		}else{
-//			speed = 100;
-//			bidibMessageHandler.sendDriveMessage(11, speed, 1);
-//			bidibMessageHandler.sendTurnMessage(0 , 0);
-//			usleep(1000*1000);
-//			bidibMessageHandler.sendTurnMessage(0 , 1);
-//		}
 
-//		bidibMessageHandler.sendTurnMessage(0 , 0);
-//		api.setTurnoutState(Turnout::TC, true);
-//
-//		usleep(1000*1000);
-////		bidibMessageHandler.sendTurnMessage(0 , 1);
-//		api.setTurnoutState(Turnout::TC, false);
-//		usleep(1000*1000);
-//		usleep(10000*1000);
-
-//		api.selfTestTurnout();
 		if(api.selfTestTrack()){
 			printf("selftest OK\n");
 			break;
@@ -58,7 +33,7 @@ int main() {
 		}
 	}
 
-	printf("Programm Ende \n"); fflush(stdout);
+	printf("Program End... \n"); fflush(stdout);
 
 	return 0;
 }

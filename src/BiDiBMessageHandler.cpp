@@ -616,52 +616,16 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 	sendMessage(message);
 }
 
-void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction) {
-
-	if(speed > 127){
-		speed = 127;
-	}
-
-	locs[locID].speed = speed;
-	locs[locID].direction = direction;
-
-	speed = speed | (direction << 7); //MSB = direction
-
-	unsigned char message[] = {
-			12,
-			gbmMasterID,
-			++msgNum,
-			MSG_CS_DRIVE,
-			locs[locID].id, //address low of loc
-			0x00, //address high of loc
-			BIDIB_CS_DRIVE_FORMAT_DCC128, //128 speed steps 0
-			1, //output active ...first bit -> speed output is active, the other function outputs are not active
-			speed, // 0 = halt, 1= Nothalt, 2-127
-			0,0,0,0 //functions active
-	};
-
-	sendMessage(message);
-}
-
-void BiDiBMessageHandler::sendFunctionStateMessage(int locID, int functionNumber, bool functionState) {
-
+void BiDiBMessageHandler::sendDriveMessage(int locID) {
 	int speed = locs[locID].speed;
 	int direction = locs[locID].direction;
-
-	speed = speed | (direction << 7);
+	speed = speed | (direction << 7); //MSB = direction
 
 	int functions = 0;
-
-	if(functionNumber == locFunction::FLight){ //light
-		locs[locID].lightState = functionState;
-	}else{ //F1 - F4
-		locs[locID].functionState[functionNumber - 1] = functionState;
+	for (int i = 0; i < 4 ; i++){
+		functions |= locs[locID].functionState[i] << i;
 	}
-
-	for (int i = 1; i < 5 ; i++){
-		functions |= locs[locID].functionState[i-1] << i;
-	}
-	functions |= locs[locID].lightState << 5;
+	functions |= locs[locID].lightState << 4;
 
 	unsigned char message[] = {
 				12,
@@ -671,15 +635,38 @@ void BiDiBMessageHandler::sendFunctionStateMessage(int locID, int functionNumber
 				locs[locID].id, //address low of loc
 				0x00, //address high of loc
 				BIDIB_CS_DRIVE_FORMAT_DCC128, //128 speed steps 0
-				1, //output active ...first bit -> speed output is active, the other function outputs are not active
+				3, //output active ...first bit -> speed output is active, second bit -> F1-F4, FL active, the other function outputs are not active
 				speed, // 0 = halt, 1= Nothalt, 2-127
-				functions,	// 3*reserved, FL, F4, F3, F2, F1
-				0,	// F12-F5
-				0,	// F20-F13
-				0 	// F28-F21 - functions active
-	};
+				functions,
+				0,
+				0,
+				0 //functions active
+		};
 
-	sendMessage(message);
+		sendMessage(message);
+}
+
+void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction) {
+
+	if(speed > 127){
+		speed = 127;
+	}
+
+	locs[locID].speed = speed;
+	locs[locID].direction = direction;
+
+	sendDriveMessage(locID);
+}
+
+void BiDiBMessageHandler::sendFunctionStateMessage(int locID, int functionNumber, bool functionState) {
+
+	if(functionNumber == locFunction::FLight){ //light
+		locs[locID].lightState = functionState;
+	}else{ //F1 - F4
+		locs[locID].functionState[functionNumber - 1] = functionState;
+	}
+
+	sendDriveMessage(locID);
 }
 
 void BiDiBMessageHandler::sendStateMessage(char bidibStateID) {
@@ -694,7 +681,6 @@ void BiDiBMessageHandler::sendStateMessage(char bidibStateID) {
 									message[2] = ++msgNum;
 									message[3] = MSG_CS_SET_STATE;
 									message[4] = bidibStateID;
-
 									break;
 
 		default:					return;
