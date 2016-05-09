@@ -18,7 +18,7 @@
 using namespace std;
 
 int main() {
-	printf("Program Start\n\n"); fflush(stdout);
+	printf("Program Start...\n\n"); fflush(stdout);
 	BidibApi api;
 
 	while(api.isConnected()){
@@ -32,7 +32,7 @@ int main() {
 		}
 	}
 
-	printf("Program End... \n"); fflush(stdout);
+	printf("\n Program End... \n"); fflush(stdout);
 
 	return 0;
 }

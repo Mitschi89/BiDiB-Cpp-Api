@@ -65,6 +65,24 @@ public:
 	//returns number of locs on a segment
 	int getLocsOnSegment(Segment::segmentID segID);
 
+//	//returns vector of resources of a station with a specific destination
+//	std::vector<Resource> getStationResources(StationID source, StationID destination);
+//	//returns number of resources in one station
+//	int getResourceCount(StationID ID);
+//
+//	//virtually loading resource from a station to a loc
+//	void loadLoc(int locID, StationID ID, std::vector<Resource> resources);
+//	//virtually unloading resource from a station to a loc
+//	void unloadLoc(int locID, StationID ID, std::vector<Resource> resources);
+//
+//	//sets the resources of station
+//	void setStationResources(StationID ID, std::vector<Resource>);
+//
+//	//sets the behavior of producing resources of one station
+//	void setResourceBehavior(StationID ID, BehaviorID behavior);
+//	//sets the behavior of producing resources of all stations
+//	void setResourceBehavior(BehaviorID behavior);
+
 private:
 	//basic variable for all actions
 	BiDiBMessageHandler bidibMessageHandler;
