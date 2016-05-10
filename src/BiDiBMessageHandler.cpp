@@ -614,14 +614,14 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 		case MSG_SYS_GET_MAGIC:		if(node == gbmMasterID){
 										message[0] = 3;
 										message[1] = gbmMasterID;
-										message[2] = msgNum = 0;
+										message[2] = msgNum [node] = 0;
 										message[3] = bidibMessageID;
 										break;
 									}else{
 										message[0] = 4;
 										message[1] = node;
 										message[2] = gbmMasterID;
-										message[3] = msgNum = 0;
+										message[3] = msgNum[node] = 0;
 										message[4] = bidibMessageID;
 										break;
 									}
@@ -635,7 +635,7 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 
 		case MSG_SYS_ENABLE:		message[0] = 3;
 									message[1] = gbmMasterID;
-									message[2] = ++msgNum;
+									message[2] = ++msgNum[node];
 									message[3] = bidibMessageID;
 									break;
 
@@ -659,7 +659,7 @@ void BiDiBMessageHandler::sendDriveMessage(int locID) {
 	unsigned char message[] = {
 				12,
 				gbmMasterID,
-				++msgNum,
+				++msgNum[gbmMasterID],
 				MSG_CS_DRIVE,
 				locs[locID].id, //address low of loc
 				0x00, //address high of loc
@@ -707,7 +707,7 @@ void BiDiBMessageHandler::sendStateMessage(char bidibStateID) {
 		case BIDIB_CS_STATE_STOP:
 		case BIDIB_CS_STATE_OFF: 	message[0] = 4;
 									message[1] = gbmMasterID;
-									message[2] = ++msgNum;
+									message[2] = ++msgNum[gbmMasterID];
 									message[3] = MSG_CS_SET_STATE;
 									message[4] = bidibStateID;
 									break;
@@ -724,31 +724,44 @@ void BiDiBMessageHandler::sendFeatureMessage(int node) {
 		unsigned char message[] = {
 					3,
 					gbmMasterID,
-					++msgNum,
+					++msgNum[node],
 					MSG_FEATURE_GETALL
 		};
 		sendMessage(message);
+
+		usleep(1000*1000);
+		for (int i = 0; i < featureCount; i++){
+			unsigned char message[] = {
+						3,
+						node,
+						++msgNum[node],
+						MSG_FEATURE_GETNEXT
+			};
+			sendMessage(message);
+			usleep(50*1000);
+		}
 	}else{
 		unsigned char message[] = {
 					4,
 					node,
 					gbmMasterID,
-					++msgNum,
+					++msgNum[node],
 					MSG_FEATURE_GETALL
 		};
 		sendMessage(message);
-	}
 
-	usleep(1000*1000);
-	for (int i = 0; i < featureCount; i++){
-		unsigned char message[] = {
-					3,
-					node,
-					++msgNum,
-					MSG_FEATURE_GETNEXT
-		};
-		sendMessage(message);
-		usleep(50*1000);
+		usleep(1000*1000);
+		for (int i = 0; i < featureCount; i++){
+			unsigned char message[] = {
+						4,
+						node,
+						gbmMasterID,
+						++msgNum[node],
+						MSG_FEATURE_GETNEXT
+			};
+			sendMessage(message);
+			usleep(50*1000);
+		}
 	}
 	featureCount = 0;
 }
@@ -757,7 +770,7 @@ void BiDiBMessageHandler::sendNodeTabMessage() {
 	unsigned char message[] = {
 				3,
 				gbmMasterID,
-				++msgNum,
+				++msgNum[gbmMasterID],
 				MSG_NODETAB_GETALL
 	};
 	sendMessage(message);
@@ -767,7 +780,7 @@ void BiDiBMessageHandler::sendNodeTabMessage() {
 		unsigned char message[] = {
 					3,
 					gbmMasterID,
-					++msgNum,
+					++msgNum[gbmMasterID],
 					MSG_NODETAB_GETNEXT
 		};
 		sendMessage(message);
@@ -783,7 +796,7 @@ void BiDiBMessageHandler::sendTurnMessage(int turnID, bool direction) {
 				8,
 				oneControlID,
 				gbmMasterID,
-				++msgNum,
+				++msgNum[oneControlID],
 				MSG_LC_OUTPUT,
 				0x00,
 				address,
@@ -794,7 +807,7 @@ void BiDiBMessageHandler::sendTurnMessage(int turnID, bool direction) {
 				8,
 				oneControlID,
 				gbmMasterID,
-				++msgNum,
+				++msgNum[oneControlID],
 				MSG_LC_OUTPUT,
 				0x00,
 				address,
@@ -810,7 +823,7 @@ void BiDiBMessageHandler::sendBoostOnMessage() {
 	unsigned char message[] = {
 						4,
 						gbmMasterID,
-						++msgNum,
+						++msgNum[gbmMasterID],
 						MSG_BOOST_ON,
 						0x00
 						};
@@ -821,7 +834,7 @@ void BiDiBMessageHandler::sendBoostOffMessage() {
 	unsigned char message[] = {
 						4,
 						gbmMasterID,
-						++msgNum,
+						++msgNum[oneControlID],
 						MSG_BOOST_OFF,
 						0x00
 						};
@@ -832,7 +845,7 @@ void BiDiBMessageHandler::sendGetLocsMessage() {
 	unsigned char message[] = {
 						5,
 						gbmMasterID,
-						++msgNum,
+						++msgNum[gbmMasterID],
 						MSG_BM_ADDR_GET_RANGE,
 						0x00,
 						31
@@ -845,7 +858,7 @@ void BiDiBMessageHandler::sendGetSwitchesMessage() {
 						6,
 						oneOcID,
 						MSG_BM_GET_RANGE,
-						++msgNum,
+						++msgNum[oneOcID],
 						MSG_BM_ADDR_GET_RANGE,
 						0x00,
 						24

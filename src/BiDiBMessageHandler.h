@@ -98,7 +98,7 @@ private:
 	int oneOcID = 0;
 	int oneControlID = 0;
 
-	char msgNum = 0;
+	char msgNum [NODECOUNT] = {0};
 
 	bool fault[6] = {false};
 
