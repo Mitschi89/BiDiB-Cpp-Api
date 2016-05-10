@@ -79,6 +79,10 @@ bool BiDiBMessageHandler::initBidib() {
 
 		if(nodeCount != NODECOUNT){
 			return false;
+		}else{
+			sendSystemMessage(oneControlID, MSG_SYS_RESET);
+			sendSystemMessage(oneOcID, MSG_SYS_RESET);
+			usleep(1000*1100);
 		}
 
 		sendSystemMessage(gbmMasterID, MSG_SYS_ENABLE);
@@ -89,6 +93,10 @@ bool BiDiBMessageHandler::initBidib() {
 		sendGetLocsMessage();
 		printf(". \n"); fflush(stdout);
 //		printf("getLocs gesendet... num: %X\n", msgNum);
+
+		sendGetSwitchesMessage();
+		printf(". \n"); fflush(stdout);
+//		printf("getSwitches gesendet... num: %X\n", msgNum);
 
 		fflush(stdout);
 
@@ -143,7 +151,7 @@ void BiDiBMessageHandler::getMessage() {
 			if(incomingData[index] == BIDIB_PKT_MAGIC){
 				if(rxCRC){
 					messageLength = 0;
-					printf("CRC ERROR !!!\n"); fflush(stdout);
+					printf("INCOMING CRC ERROR !!!\n"); fflush(stdout);
 				}else{
 					processMessage(messageData, messageLength-1);
 					messageLength = 0;
@@ -305,7 +313,11 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 int BiDiBMessageHandler::processBM(unsigned char* message) {
 	int messageOffset = 0;
 	if (message[1] != gbmMasterID){
-		messageOffset = 1;
+		if(message[1] == oneOcID){
+			messageOffset = 1;
+		}else{
+			return -1;
+		}
 	}
 
 	if(message[3 + messageOffset] == MSG_BM_FREE){
@@ -327,11 +339,19 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 	fflush(stdout);
 
 	if(message[3 + messageOffset] == MSG_BM_ADDRESS){
-		processlocMessage(message);
+		if(!messageOffset){
+			processlocMessage(message);
+		}else{
+			processFaultMessage(message);
+		}
 	}
 
 	if(message[3 + messageOffset] == MSG_BM_MULTIPLE){
-		locAllPositions = message[4];
+		if(!messageOffset){
+			locAllPositions = message[4];
+		}else{
+			processFaultMessage(message);
+		}
 	}
 
 	return 0;
@@ -389,10 +409,7 @@ int BiDiBMessageHandler::processFunctionMessage(unsigned char* message) {
 }
 
 int BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
-	//switch: 8, 10, 11, 12, 14, 16
-	//button: 7, 9, 13, 15, 17, 18
-	bool occupied;
-	int position = -1;
+
 	int messageOffset = 0;
 	if (message[1] == oneOcID){
 		messageOffset = 1;
@@ -400,31 +417,74 @@ int BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
 		return -1;
 	}
 
-	int switchID = message[4 + messageOffset];
 	if(message[3 + messageOffset] == MSG_BM_OCC){
-		occupied = true;
-	}else{
-		occupied = false;
+		int switchID = message[4 + messageOffset];
+		bool active = false;
+		setFault(switchID, active);
 	}
+
+	if(message[3 + messageOffset] == MSG_BM_FREE){
+		int switchID = message[4 + messageOffset];
+		bool active = true;
+		setFault(switchID, active);
+	}
+
+	if(message[3 + messageOffset] == MSG_BM_MULTIPLE){
+		for(int byteNumber = 0; byteNumber < 3; byteNumber++){
+			int switches = message[6 + messageOffset + byteNumber];
+			for(int i = 0; i < 8; i++){
+				bool active = (switches & (1 << i)) >> i;
+				int switchID = i + 8*byteNumber;
+
+				setFault(switchID, !active);
+			}
+		}
+	}
+}
+
+int BiDiBMessageHandler::setFault(int switchID, bool active) {
+	//switch: 8, 10, 11, 12, 14, 16
+	//button: 7, 9, 13, 15, 17, 18
+	int position = -1;
 
 	switch (switchID){
-		case 8: 	fault[0] = !occupied; break;
-		case 10:	fault[1] = !occupied; break;
-		case 11:	fault[2] = !occupied; break;
-		case 12:	fault[3] = !occupied; break;
-		case 14:	fault[4] = !occupied; break;
-		case 16:	fault[5] = !occupied; break;
+			case 8: 	fault[0] = active; break;
+			case 10:	fault[1] = active; break;
+			case 11:	fault[2] = active; break;
+			case 12:	fault[3] = active; break;
+			case 14:	fault[4] = active; break;
+			case 16:	fault[5] = active; break;
 
-		case 7:		position = 8; break;
-		case 9:		position = 13; break;
-		case 13:	position = 30; break;
-		case 15:	position = 21; break;
-		case 17:	position = 23; break;
-		case 18: 	position = 12; break;
+			case 7:		position = 8; break;
+			case 9:		position = 13; break;
+			case 13:	position = 30; break;
+			case 15:	position = 21; break;
+			case 17:	position = 23; break;
+			case 18: 	position = 12; break;
+		}
+		if(position != -1){
+			for(int id = 0; id < locCount; id++){
+				setLocPosition(id, position, active);
+			}
+		}
+}
+
+int BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
+	bool activeFault = false;
+	switch(position){
+		case 8:  	activeFault = fault[0]; break;
+		case 13:  	activeFault = fault[1]; break;
+		case 12:  	activeFault = fault[2]; break;
+		case 30:  	activeFault = fault[3]; break;
+		case 21:  	activeFault = fault[4]; break;
+		case 23:  	activeFault = fault[5]; break;
+
 	}
-	if(position != -1){
-		for(int id = 0; id < locCount; id++){
-			setLocPosition(id, position, occupied);
+	if(!activeFault){
+		if(occupied){
+			locs[id].position |= (0x01 << position);
+		}else{
+			locs[id].position &= ~(0x01 << position);
 		}
 	}
 }
@@ -491,7 +551,7 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 		if(entryNumber == oneOcID){
 			printf("OneOC not available.\n");
 		}
-		if(entryNumber != (gbmMasterID | oneControlID | oneOcID)){
+		if((entryNumber != gbmMasterID) && (entryNumber !=  oneControlID) && (entryNumber !=  oneOcID)){
 			printf("Unknown Node not available.\n");
 		}
 	}
@@ -524,26 +584,6 @@ int BiDiBMessageHandler::processErrorMessage(unsigned char* message) {
 									break;
 		default:					printf("Unknown ERROR\n");
 
-	}
-}
-
-int BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
-	bool activeFault = false;
-	switch(position){
-		case 8:  	activeFault = fault[0]; break;
-		case 13:  	activeFault = fault[1]; break;
-		case 12:  	activeFault = fault[2]; break;
-		case 30:  	activeFault = fault[3]; break;
-		case 21:  	activeFault = fault[4]; break;
-		case 23:  	activeFault = fault[5]; break;
-
-	}
-	if(!activeFault){
-		if(occupied){
-			locs[id].position |= (0x01 << position);
-		}else{
-			locs[id].position &= ~(0x01 << position);
-		}
 	}
 }
 
@@ -581,7 +621,7 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 										message[0] = 4;
 										message[1] = node;
 										message[2] = gbmMasterID;
-										message[3] = ++msgNum;
+										message[3] = msgNum = 0;
 										message[4] = bidibMessageID;
 										break;
 									}
@@ -796,6 +836,19 @@ void BiDiBMessageHandler::sendGetLocsMessage() {
 						MSG_BM_ADDR_GET_RANGE,
 						0x00,
 						31
+						};
+	sendMessage(message);
+}
+
+void BiDiBMessageHandler::sendGetSwitchesMessage() {
+	unsigned char message[] = {
+						6,
+						oneOcID,
+						MSG_BM_GET_RANGE,
+						++msgNum,
+						MSG_BM_ADDR_GET_RANGE,
+						0x00,
+						24
 						};
 	sendMessage(message);
 }

@@ -32,7 +32,7 @@ int main() {
 		}
 	}
 
-	printf("\n Program End... \n"); fflush(stdout);
+	printf("\nProgram End... \n"); fflush(stdout);
 
 	return 0;
 }

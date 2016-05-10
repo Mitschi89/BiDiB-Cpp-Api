@@ -10,15 +10,15 @@
 #define BIDIBMESSAGEHANDLER_H_
 
 #define SHOWSYSMESSAGES		0
-#define SHOWERRORMESSAGE	0
+#define SHOWERRORMESSAGE	1
 #define SHOWMAGIC 			0
 #define SHOWDIAGNOSTIC		0
-#define	SHOWBMMessages		0
+#define	SHOWBMMessages		1
 #define SHOWBMMULTI			0
-#define SHOWALLBMMESSAGES	0
+#define SHOWALLBMMESSAGES	1
 #define SHOWFEATURE			0
 #define SHOWTURNOUTSTATE	0
-#define SHOWNODETAB			0
+#define SHOWNODETAB			1
 
 #define NODECOUNT			3
 
@@ -57,6 +57,7 @@ public:
 	void sendBoostOffMessage();
 	void sendFunctionStateMessage(int locID, int functionNumber, bool functionState);
 	void sendGetLocsMessage();
+	void sendGetSwitchesMessage();
 	bool isConnected();
 
 	Loc locs [MAXNUMBEROFSEGEMENTSWITHLOC];
@@ -79,6 +80,7 @@ private:
 	int processNodeTabMessage(unsigned char *message);
 	int processErrorMessage(unsigned char *message);
 
+	int setFault(int switchID, bool active);
 	int setLocPosition(int id, int position, bool occupied);
 
 	char* getMessageType(int type);
