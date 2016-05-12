@@ -218,7 +218,7 @@ int BidibApi::getNumberOfLocs() {
 	return bidibMessageHandler.locCount;
 }
 
-int BidibApi::getAllLocPostion() {
+uint32_t BidibApi::getAllLocPosition() {
 	return bidibMessageHandler.locAllPositions;
 }
 

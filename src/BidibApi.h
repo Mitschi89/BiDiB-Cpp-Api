@@ -41,7 +41,7 @@ public:
 	//returns true if loc is on that segment
 	bool isLocOnPosition(int locID, Segment::segmentID segID);
 	//returns all Positions of locs, no specific ID is returned
-	int getAllLocPostion();
+	uint32_t getAllLocPosition();
 	// sets speed of loc
 	void setLocSpeed(int locID, int speed, bool forward);
 	//returns speed of loc

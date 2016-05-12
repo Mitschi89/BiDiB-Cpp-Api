@@ -46,7 +46,7 @@ public:
 	Loc locs [MAXNUMBEROFSEGEMENTSWITHLOC];
 	Turnout turnouts[MAXNUMBEROFTURNOUTS];
 	int locCount = 0;
-	int locAllPositions = 0;
+	uint32_t locAllPositions = 0;
 
 private:
 	void getMessage();

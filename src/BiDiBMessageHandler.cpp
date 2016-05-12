@@ -359,7 +359,11 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 
 	if(message[3 + messageOffset] == MSG_BM_MULTIPLE){
 		if(!messageOffset){
-			locAllPositions = message[4];
+			locAllPositions = 0;
+			locAllPositions += message[9] << 24;
+			locAllPositions += message[8] << 16;
+			locAllPositions += message[7] << 8;
+			locAllPositions += message[6];
 		}else{
 			if(FAULTSON){
 				processFaultMessage(message);
