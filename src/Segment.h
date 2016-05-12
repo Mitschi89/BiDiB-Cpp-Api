@@ -48,6 +48,8 @@ public:
 
 	Segment();
 	virtual ~Segment();
+
+	static char* convertSegmentName(Segment::segmentID);
 };
 
 #endif /* SEGMENT_H_ */
