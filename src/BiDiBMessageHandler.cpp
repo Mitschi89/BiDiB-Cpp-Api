@@ -874,7 +874,7 @@ void BiDiBMessageHandler::sendBoostOffMessage() {
 	unsigned char message[] = {
 						4,
 						gbmMasterID,
-						++msgNum[oneControlID],
+						++msgNum[gbmMasterID],
 						MSG_BOOST_OFF,
 						0x00
 						};
