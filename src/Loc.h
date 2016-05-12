@@ -10,6 +10,7 @@
 #define LOC_H_
 
 #include <stdint.h>
+#include "StateMaschine.h"
 
 
 class Loc {
@@ -20,6 +21,8 @@ public:
 	bool direction = 0; //true == forward
 	bool functionState[4] = {false};
 	bool lightState = false;
+
+	StateMaschine stateMaschine;
 
 	Loc();
 	~Loc();
