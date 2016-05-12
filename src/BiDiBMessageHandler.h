@@ -9,25 +9,8 @@
 #ifndef BIDIBMESSAGEHANDLER_H_
 #define BIDIBMESSAGEHANDLER_H_
 
-#define SHOWSYSMESSAGES		0
-#define SHOWERRORMESSAGE	1
-#define SHOWMAGIC 			0
-#define SHOWDIAGNOSTIC		0
-#define	SHOWBMMessages		1
-#define SHOWBMMULTI			0
-#define SHOWALLBMMESSAGES	1
-#define SHOWFEATURE			0
-#define SHOWTURNOUTSTATE	0
-#define SHOWNODETAB			1
-
-#define NODECOUNT			3
-
-#define MAXNUMBEROFSEGEMENTSWITHLOC 10 //max Number of segment a loc can be on the track
-#define MAXNUMBEROFTURNOUTS 7
-#define MAXNUMBEROFSEGMENTS 32
-
-
 #include "bidib_messages.h"
+#include "Definitions.h"
 #include "Loc.h"
 #include "Turnout.h"
 #include "locFunction.h"
@@ -58,7 +41,7 @@ public:
 	void sendFunctionStateMessage(int locID, int functionNumber, bool functionState);
 	void sendGetLocsMessage();
 	void sendGetSwitchesMessage();
-	bool isConnected();
+	int isConnected();
 
 	Loc locs [MAXNUMBEROFSEGEMENTSWITHLOC];
 	Turnout turnouts[MAXNUMBEROFTURNOUTS];
@@ -89,7 +72,7 @@ private:
 	Serial* serialPort;
 	std::thread receiverThread;
 
-	bool connected = false;
+	int connected = 0;
 
 	int nodeCount = 0;
 	int featureCount = 0;

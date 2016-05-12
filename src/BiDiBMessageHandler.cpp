@@ -9,22 +9,28 @@
 #include "BiDiBMessageHandler.h"
 
 BiDiBMessageHandler::BiDiBMessageHandler() {
-	connected = true;
 	serialPort = NULL;
 	if(!this->initSerialPort("/dev/ttyUSB0")){
-		connected = false;
+		connected = -1;
 		return;
 	}
 
 	receiverThread = std::thread(&BiDiBMessageHandler::getMessage, this);
 	if(!initBidib()){
-		connected = false;
+		connected = -1;
 		return;
 	}
 
-	for (int i = 0; i < MAXNUMBEROFTURNOUTS; i++){
+	for(int i = 0; i < MAXNUMBEROFTURNOUTS; i++){
 		turnouts[i].ID = (Turnout::turnoutID) i;
 	}
+	for(int i = 0; i < MAXNUMBEROFSEGEMENTSWITHLOC; i++){
+		for(int k = 0; k < MAXNUMBEROFTURNOUTS; k++){
+			locs[i].stateMaschine.turnouts[k] = turnouts[k];
+		}
+	}
+
+	connected = 1;
 }
 
 BiDiBMessageHandler::~BiDiBMessageHandler() {
@@ -59,52 +65,50 @@ bool BiDiBMessageHandler::initSerialPort(int comPortNumber) {
 }
 
 bool BiDiBMessageHandler::initBidib() {
-	if(isConnected()){
-		printf("Initializing BiDiB-Protocol. "); fflush(stdout);
+	printf("Initializing BiDiB-Protocol. "); fflush(stdout);
 
-		sendSystemMessage(gbmMasterID, MSG_SYS_GET_MAGIC);
-		printf(". "); fflush(stdout);
+	sendSystemMessage(gbmMasterID, MSG_SYS_GET_MAGIC);
+	printf(". "); fflush(stdout);
 //		printf("Magic gesendet... num: %X\n", msgNum);
-		usleep(1000*100);
+	usleep(1000*100);
 
-		sendSystemMessage(gbmMasterID, MSG_SYS_RESET);
-		printf(". "); fflush(stdout);
-		usleep(1000*1100);
+	sendSystemMessage(gbmMasterID, MSG_SYS_RESET);
+	printf(". "); fflush(stdout);
+	usleep(1000*1100);
 //		printf("Reset gesendet... num: %X\n");
 
-		sendNodeTabMessage();
-		printf(". "); fflush(stdout);
+	sendNodeTabMessage();
+	printf(". "); fflush(stdout);
 //		printf("Get_NodeTab gesendet... num: %X\n", msgNum);
-		usleep(1000*100);
+	usleep(1000*100);
 
-		if(nodeCount != NODECOUNT){
-			return false;
-		}else{
-			sendSystemMessage(oneControlID, MSG_SYS_RESET);
-			sendSystemMessage(oneOcID, MSG_SYS_RESET);
-			usleep(1000*1100);
-		}
+	if(nodeCount != NODECOUNT){
+		return false;
+	}else{
+		sendSystemMessage(oneControlID, MSG_SYS_RESET);
+		sendSystemMessage(oneOcID, MSG_SYS_RESET);
+		usleep(1000*1100);
+	}
 
-		sendSystemMessage(gbmMasterID, MSG_SYS_ENABLE);
-		printf(". "); fflush(stdout);
+	sendSystemMessage(gbmMasterID, MSG_SYS_ENABLE);
+	printf(". "); fflush(stdout);
 //		printf("Sys_enable gesendet... num: %X\n", msgNum);
-		usleep(1000*100);
+	usleep(1000*100);
 
-		sendGetLocsMessage();
-		printf(". \n"); fflush(stdout);
+	sendGetLocsMessage();
+	printf(". \n"); fflush(stdout);
 //		printf("getLocs gesendet... num: %X\n", msgNum);
 
-		sendGetSwitchesMessage();
-		printf(". \n"); fflush(stdout);
+	sendGetSwitchesMessage();
+	printf(". \n"); fflush(stdout);
 //		printf("getSwitches gesendet... num: %X\n", msgNum);
 
-		fflush(stdout);
+	fflush(stdout);
 
-		return true;
-	}
+	return true;
 }
 
-bool BiDiBMessageHandler::isConnected() {
+int BiDiBMessageHandler::isConnected() {
 	return connected;
 }
 
@@ -196,6 +200,7 @@ void BiDiBMessageHandler::sendMessage(unsigned char* message) {
 	rawMessage[index] = BIDIB_PKT_MAGIC;
 
 	serialPort->WriteData(rawMessage, index + 1);
+	usleep(1000*50);
 
 	return;
 }
@@ -324,7 +329,9 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 		if(!messageOffset){
 //			printf("Position: %d free \n", message[4 + messageOffset]);
 		}else{
-			processFaultMessage(message);
+			if(FAULTSON){
+				processFaultMessage(message);
+			}
 		}
 	}
 
@@ -332,7 +339,9 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 		if(!messageOffset){
 //			printf("Position: %d occupied \n", message[4 + messageOffset]);
 		}else{
-			processFaultMessage(message);
+			if(FAULTSON){
+				processFaultMessage(message);
+			}
 		}
 	}
 
@@ -342,7 +351,9 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 		if(!messageOffset){
 			processlocMessage(message);
 		}else{
-			processFaultMessage(message);
+			if(FAULTSON){
+				processFaultMessage(message);
+			}
 		}
 	}
 
@@ -350,7 +361,9 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 		if(!messageOffset){
 			locAllPositions = message[4];
 		}else{
-			processFaultMessage(message);
+			if(FAULTSON){
+				processFaultMessage(message);
+			}
 		}
 	}
 
@@ -471,17 +484,21 @@ int BiDiBMessageHandler::setFault(int switchID, bool active) {
 
 int BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
 	bool activeFault = false;
-	switch(position){
-		case 8:  	activeFault = fault[0]; break;
-		case 13:  	activeFault = fault[1]; break;
-		case 12:  	activeFault = fault[2]; break;
-		case 30:  	activeFault = fault[3]; break;
-		case 21:  	activeFault = fault[4]; break;
-		case 23:  	activeFault = fault[5]; break;
+	if(FAULTSON){
+		switch(position){
+			case 8:  	activeFault = fault[0]; break;
+			case 13:  	activeFault = fault[1]; break;
+			case 12:  	activeFault = fault[2]; break;
+			case 30:  	activeFault = fault[3]; break;
+			case 21:  	activeFault = fault[4]; break;
+			case 23:  	activeFault = fault[5]; break;
 
+		}
 	}
+
 	if(!activeFault){
 		if(occupied){
+			locs[id].stateMaschine.updateState(position);
 			locs[id].position |= (0x01 << position);
 		}else{
 			locs[id].position &= ~(0x01 << position);
@@ -509,6 +526,11 @@ int BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
 		int turnID = (address - direction - 8) / 2;
 
 		turnouts[turnID].turnDir = (Turnout::turnDirection) direction;
+
+		for(int i = 0; i < MAXNUMBEROFSEGEMENTSWITHLOC; i++){
+			locs[i].stateMaschine.turnouts[turnID].turnDir = turnouts[turnID].turnDir;
+		}
+
 	}
 }
 
@@ -670,9 +692,9 @@ void BiDiBMessageHandler::sendDriveMessage(int locID) {
 				0,
 				0,
 				0 //functions active
-		};
+	};
 
-		sendMessage(message);
+	sendMessage(message);
 }
 
 void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction) {
@@ -683,6 +705,20 @@ void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction)
 
 	locs[locID].speed = speed;
 	locs[locID].direction = direction;
+
+	if(locs[locID].stateMaschine.direction == locs[locID].stateMaschine.logicalDirection){
+		locs[locID].stateMaschine.logicalDirection = direction;
+	}else{
+		locs[locID].stateMaschine.logicalDirection = !direction;
+	}
+
+	locs[locID].stateMaschine.direction = direction;
+
+	if((speed == 0) || (speed == 1)){
+		locs[locID].stateMaschine.driveStatus = false;
+	}else{
+		locs[locID].stateMaschine.driveStatus = true;
+	}
 
 	sendDriveMessage(locID);
 }
