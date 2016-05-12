@@ -9,6 +9,12 @@
 #include "BidibApi.h"
 
 BidibApi::BidibApi() {
+	while(bidibMessageHandler.isConnected() != 1){
+		if(bidibMessageHandler.isConnected() == -1){
+			return;
+		}
+		usleep(1000*1000);
+	}
 }
 
 BidibApi::~BidibApi() {
@@ -24,6 +30,8 @@ void BidibApi::powerOff() {
 }
 
 bool BidibApi::selfTestTurnout() {
+	setAllTurnoutsState(Turnout::straightOn);
+
 	setTurnoutState(Turnout::TNW, Turnout::bendOff);
 	usleep(1000*1000);
 	setTurnoutState(Turnout::TNW, Turnout::straightOn);
@@ -260,11 +268,11 @@ std::vector<Segment::segmentID> BidibApi::getLocPosition(int locID) {
 	}
 
 	int index = 0;
-	int postion = bidibMessageHandler.locs[locID].position;
+	uint32_t position = bidibMessageHandler.locs[locID].position;
 
-	if(locID < bidibMessageHandler.locCount){
+	if(locID < getNumberOfLocs()){
 		for(int i = 0; i < MAXNUMBEROFSEGMENTS; i++){
-			if(postion & (1 << i)){
+			if(position & (1 << i)){
 				segID[index] = (Segment::segmentID) i;
 				index++;
 			}
@@ -284,7 +292,13 @@ void BidibApi::setAllTurnoutsState(Turnout::turnDirection turnDir) {
 }
 
 bool BidibApi::isConnected() {
-	return bidibMessageHandler.isConnected();
+	if((bidibMessageHandler.isConnected() == 0) || (bidibMessageHandler.isConnected() == -1)){
+		return false;
+	}
+	if(bidibMessageHandler.isConnected() == 1){
+		return true;
+	}
+
 }
 
 bool BidibApi::isLocOnPosition(int locID, Segment::segmentID segID) {
@@ -306,4 +320,12 @@ int BidibApi::getLocsOnSegment(Segment::segmentID segID) {
 		}
 	}
 	return locsOnSegment;
+}
+
+Segment::segmentID BidibApi::getPredictedNextState(int locID) {
+	return bidibMessageHandler.locs[locID].stateMaschine.nextState;
+}
+
+Segment::segmentID BidibApi::getCurrentState(int locID) {
+	return bidibMessageHandler.locs[locID].stateMaschine.currentState;
 }

@@ -65,6 +65,10 @@ public:
 	//returns number of locs on a segment
 	int getLocsOnSegment(Segment::segmentID segID);
 
+	//returns the predicted next State
+	Segment::segmentID getPredictedNextState(int locID);
+	Segment::segmentID getCurrentState(int locID);
+
 //	//returns vector of resources of a station with a specific destination
 //	std::vector<Resource> getStationResources(StationID source, StationID destination);
 //	//returns number of resources in one station
