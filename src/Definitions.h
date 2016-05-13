@@ -17,7 +17,7 @@
 #define SHOWALLBMMESSAGES	0
 #define SHOWFEATURE			0
 #define SHOWTURNOUTSTATE	0
-#define SHOWNODETAB			0
+#define SHOWNODETAB			1
 
 #define FAULTSON			0
 
