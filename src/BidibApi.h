@@ -48,6 +48,8 @@ public:
 	int getLocSpeed(int locID);
 	// returns direction of loc
 	bool getLocDirection(int locID);
+	// returns logical direction of loc
+	bool getLocLogicalDirection(int locID);
 	//sets a loc function
 	void setLocFunction(int locID, locFunction::locFunctionID ID, bool functionState);
 	//returns the state of a function of a loc
@@ -61,6 +63,8 @@ public:
 	void setTurnoutState(Turnout::turnoutID turnID, Turnout::turnDirection turnDir);
 	// sets all turnouts in one state
 	void setAllTurnoutsState(Turnout::turnDirection turnDir);
+	//toggels the state of a turnout
+	void toggleTurnoutState(Turnout::turnoutID turnID);
 
 	//returns number of locs on a segment
 	int getLocsOnSegment(Segment::segmentID segID);

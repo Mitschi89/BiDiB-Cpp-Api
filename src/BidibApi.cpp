@@ -234,6 +234,10 @@ bool BidibApi::getLocDirection(int locID) {
 	return bidibMessageHandler.locs[locID].direction;
 }
 
+bool BidibApi::getLocLogicalDirection(int locID) {
+	return bidibMessageHandler.locs[locID].stateMaschine.logicalDirection;
+}
+
 void BidibApi::setLocFunction(int locID, locFunction::locFunctionID ID, bool functionState) {
 	bidibMessageHandler.sendFunctionStateMessage(locID, ID, functionState);
 }
@@ -328,4 +332,12 @@ Segment::segmentID BidibApi::getPredictedNextState(int locID) {
 
 Segment::segmentID BidibApi::getCurrentState(int locID) {
 	return bidibMessageHandler.locs[locID].stateMaschine.currentState;
+}
+
+void BidibApi::toggleTurnoutState(Turnout::turnoutID turnID) {
+	if(getTurnoutState(turnID) == Turnout::straightOn){
+		setTurnoutState(turnID, Turnout::bendOff);
+	}else{
+		setTurnoutState(turnID, Turnout::straightOn);
+	}
 }
