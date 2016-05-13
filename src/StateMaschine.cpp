@@ -276,11 +276,11 @@ Segment::segmentID StateMaschine::predictedNextState() {
 		}
 	}
 
-	printf("CurrentState: \t %s\n", Segment::convertSegmentName(currentState)); fflush(stdout);
-	printf("nextState: \t %s\n", Segment::convertSegmentName(nextState)); fflush(stdout);
-	printf("driveStatus: \t %d\n", driveStatus);fflush(stdout);
-	printf("logDirection: \t %d\n", logicalDirection);fflush(stdout);
-	printf("direction: \t %d\n\n", direction);fflush(stdout);
+//	printf("CurrentState: \t %s\n", Segment::convertSegmentName(currentState)); fflush(stdout);
+//	printf("nextState: \t %s\n", Segment::convertSegmentName(nextState)); fflush(stdout);
+//	printf("driveStatus: \t %d\n", driveStatus);fflush(stdout);
+//	printf("logDirection: \t %d\n", logicalDirection);fflush(stdout);
+//	printf("direction: \t %d\n\n", direction);fflush(stdout);
 
 	return nextState;
 }
