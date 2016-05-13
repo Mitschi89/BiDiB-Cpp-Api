@@ -200,7 +200,6 @@ void BiDiBMessageHandler::sendMessage(unsigned char* message) {
 	rawMessage[index] = BIDIB_PKT_MAGIC;
 
 	serialPort->WriteData(rawMessage, index + 1);
-	usleep(1000*50);
 
 	return;
 }
@@ -565,8 +564,13 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 		}
 	}
 
-	if(message[3] == MSG_NODE_NA){
-		int entryNumber = message[4];
+	int messageOffset = 0;
+		if (message[1] != gbmMasterID){
+			messageOffset = 1;
+		}
+
+	if(message[3 + messageOffset] == MSG_NODE_NA){
+		int entryNumber = message[4 + messageOffset];
 
 		if(entryNumber == gbmMasterID){
 			printf("GBM Master not available.\n");
@@ -607,6 +611,8 @@ int BiDiBMessageHandler::processErrorMessage(unsigned char* message) {
 		case BIDIB_ERR_OVERRUN:		printf("Overrun ERROR\n");
 									break;
 		case BIDIB_ERR_HW:			printf("Hardware ERROR\n");
+									break;
+		case BIDIB_ERR_SUBTIME:		printf("SubNode Message Timeout ERROR\n");
 									break;
 		default:					printf("Unknown ERROR\n");
 
@@ -709,6 +715,7 @@ void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction)
 
 	locs[locID].speed = speed;
 	locs[locID].direction = direction;
+	locs[locID].stateMaschine.direction = direction;
 
 	if(locs[locID].stateMaschine.direction == locs[locID].stateMaschine.logicalDirection){
 		locs[locID].stateMaschine.logicalDirection = direction;
@@ -716,10 +723,10 @@ void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction)
 		locs[locID].stateMaschine.logicalDirection = !direction;
 	}
 
-	locs[locID].stateMaschine.direction = direction;
 
 	if((speed == 0) || (speed == 1)){
 		locs[locID].stateMaschine.driveStatus = false;
+		locs[locID].stateMaschine.predictedNextState();
 	}else{
 		locs[locID].stateMaschine.driveStatus = true;
 	}
