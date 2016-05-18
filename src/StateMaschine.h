@@ -12,6 +12,7 @@
 #include "Turnout.h"
 #include "Definitions.h"
 #include <stdio.h>
+#include <vector>
 
 class StateMaschine {
 public:
@@ -19,7 +20,10 @@ public:
 	virtual ~StateMaschine();
 
 	void updateState(int currentPosition);
+	bool updateDirection();
 	Segment::segmentID predictedNextState();
+
+	void setCircles();
 
 	Segment::segmentID currentState = Segment::DEFAULT;
 	Segment::segmentID previousState = Segment::DEFAULT;
@@ -28,6 +32,15 @@ public:
 	bool logicalDirection = true;
 	bool driveStatus = false;
 	Turnout turnouts[MAXNUMBEROFTURNOUTS];
+
+	struct Node{
+		Segment::segmentID currentNode;
+		Segment::segmentID nextNode;
+		Segment::segmentID previousNode;
+	};
+	std::vector<struct Node> bigCircle;
+	std::vector<struct Node> leftCircle;
+	std::vector<struct Node> rightCircle;
 
 };
 
