@@ -31,7 +31,7 @@ void StateMaschine::updateState(int currentPosition) {
 
 bool StateMaschine::updateDirection() {
 
-	for(int i = 0; i < bigCircle.size(); i++){
+	for(int i = 0; i < (int)bigCircle.size(); i++){
 		if(bigCircle.at(i).currentNode == currentState){
 			if(bigCircle.at(i).previousNode == previousState){
 				return true;
@@ -44,7 +44,7 @@ bool StateMaschine::updateDirection() {
 			}
 		}
 	}
-	for(int i = 0; i < leftCircle.size(); i++){
+	for(int i = 0; i < (int)leftCircle.size(); i++){
 		if(leftCircle.at(i).currentNode == currentState){
 			if(leftCircle.at(i).previousNode == previousState){
 				return true;
@@ -57,7 +57,7 @@ bool StateMaschine::updateDirection() {
 			}
 		}
 	}
-	for(int i = 0; i < rightCircle.size(); i++){
+	for(int i = 0; i < (int)rightCircle.size(); i++){
 		if(rightCircle.at(i).currentNode == currentState){
 			if(rightCircle.at(i).previousNode == previousState){
 				return true;
@@ -70,6 +70,8 @@ bool StateMaschine::updateDirection() {
 			}
 		}
 	}
+
+	return logicalDirection;
 }
 
 Segment::segmentID StateMaschine::predictedNextState() {

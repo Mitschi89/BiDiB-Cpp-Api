@@ -715,14 +715,14 @@ void BiDiBMessageHandler::sendDriveMessage(int locID, int speed, bool direction)
 
 	locs[locID].speed = speed;
 	locs[locID].direction = direction;
-	locs[locID].stateMaschine.direction = direction;
 
 	if(locs[locID].stateMaschine.direction == locs[locID].stateMaschine.logicalDirection){
+		locs[locID].stateMaschine.direction = direction;
 		locs[locID].stateMaschine.logicalDirection = direction;
 	}else{
+		locs[locID].stateMaschine.direction = direction;
 		locs[locID].stateMaschine.logicalDirection = !direction;
 	}
-
 
 	if((speed == 0) || (speed == 1)){
 		locs[locID].stateMaschine.driveStatus = false;

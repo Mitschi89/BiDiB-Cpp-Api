@@ -45,10 +45,12 @@ void handlePredictions(BidibApi *api){
 		}
 
 		if((api->getCurrentState(locID) == Segment::A1) || (api->getCurrentState(locID) == Segment::A2)){
-			if((criticalState[locID] != Segment::A1) && (criticalState[locID] != Segment::A2)){
-				if(api->getLocLogicalDirection(locID) == false){
-					api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
-					criticalState[locID] = api->getCurrentState(locID);
+			if(!(api->isLocOnPosition(locID, Segment::TA1)) && !(api->isLocOnPosition(locID, Segment::TA2))){
+				if((criticalState[locID] != Segment::A1) && (criticalState[locID] != Segment::A2)){
+					if(api->getLocLogicalDirection(locID) == false){
+						api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
+						criticalState[locID] = api->getCurrentState(locID);
+					}
 				}
 			}
 		}
@@ -183,7 +185,7 @@ int main() {
 
 //		switchRandomTurn(&api);
 
-		usleep(500*1000);
+//		usleep(500*1000);
 	}
 
 
