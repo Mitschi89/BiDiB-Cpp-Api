@@ -276,6 +276,7 @@ Segment::segmentID StateMaschine::predictedNextState() {
 		}
 	}
 
+//	printf("PreviousState: \t %s\n", Segment::convertSegmentName(previousState)); fflush(stdout);
 //	printf("CurrentState: \t %s\n", Segment::convertSegmentName(currentState)); fflush(stdout);
 //	printf("nextState: \t %s\n", Segment::convertSegmentName(nextState)); fflush(stdout);
 //	printf("driveStatus: \t %d\n", driveStatus);fflush(stdout);

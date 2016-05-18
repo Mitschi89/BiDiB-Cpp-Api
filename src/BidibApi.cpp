@@ -334,6 +334,10 @@ Segment::segmentID BidibApi::getCurrentState(int locID) {
 	return bidibMessageHandler.locs[locID].stateMaschine.currentState;
 }
 
+Segment::segmentID BidibApi::getPreviousState(int locID) {
+	return bidibMessageHandler.locs[locID].stateMaschine.previousState;
+}
+
 void BidibApi::toggleTurnoutState(Turnout::turnoutID turnID) {
 	if(getTurnoutState(turnID) == Turnout::straightOn){
 		setTurnoutState(turnID, Turnout::bendOff);

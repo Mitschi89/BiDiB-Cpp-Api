@@ -20,8 +20,8 @@
 using namespace std;
 
 int locCount = 0;
-int speed = 30;
-bool locOnA12[MAXNUMBEROFSEGEMENTSWITHLOC] = {false};
+int speed = 50;
+Segment::segmentID criticalState[MAXNUMBEROFSEGEMENTSWITHLOC] = {Segment::DEFAULT};
 
 void handlePredictions(BidibApi *api){
 
@@ -39,48 +39,83 @@ void handlePredictions(BidibApi *api){
 	}
 
 	for(int locID = 0; locID < locCount; locID++){
-		if(((api->getCurrentState(locID) == Segment::A1) || (api->getCurrentState(locID) == Segment::A2)) && (!locOnA12[locID])){
-			if(api->getLocLogicalDirection(locID) == false){
-				api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
-				locOnA12[locID] = true;
+
+		if(api->getCurrentState(locID) != criticalState[locID]){
+			criticalState[locID] = Segment::DEFAULT;
+		}
+
+		if((api->getCurrentState(locID) == Segment::A1) || (api->getCurrentState(locID) == Segment::A2)){
+			if((criticalState[locID] != Segment::A1) && (criticalState[locID] != Segment::A2)){
+				if(api->getLocLogicalDirection(locID) == false){
+					api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
+					criticalState[locID] = api->getCurrentState(locID);
+				}
 			}
-		}else{
-			locOnA12[locID] = false;
 		}
 
 		for(int nextLocID = locID+1; nextLocID < locCount; nextLocID++){
-			if(api->getPredictedNextState(locID) == api->getPredictedNextState(nextLocID)){
-				if(api->getLocLogicalDirection(locID) == api->getLocLogicalDirection(nextLocID)){
 
+			if(api->getCurrentState(nextLocID) != criticalState[nextLocID]){
+				criticalState[nextLocID] = Segment::DEFAULT;
+			}
+
+			if(api->getPredictedNextState(locID) == api->getPredictedNextState(nextLocID)){
+				if((api->getCurrentState(locID) != criticalState[locID]) &&
+						(api->getCurrentState(nextLocID) != criticalState[nextLocID])){
+
+					api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
+					api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+					criticalState[locID] = api->getCurrentState(locID);
+					criticalState[nextLocID] = api->getCurrentState(nextLocID);
+					printf("Equal Predicted State: loc: %d and loc: %d at position: %s\n" ,
+							locID, nextLocID, Segment::convertSegmentName(api->getPredictedNextState(locID)));fflush(stdout);
 				}
-				api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
-				api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
-				printf("Equal Predicted State: loc: %d and loc: %d at position: %s\n" , locID, nextLocID, Segment::convertSegmentName(api->getPredictedNextState(locID)));fflush(stdout);
 			}
 			if(api->getPredictedNextState(locID) == api->getCurrentState(nextLocID)){
 				if(api->getLocLogicalDirection(locID) == api->getLocLogicalDirection(nextLocID)){
 					api->setLocSpeed(locID, speed / 2, api->getLocDirection(locID));
 				}else{
-					api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
-					api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+					if((api->getCurrentState(locID) != criticalState[locID]) &&
+							(api->getCurrentState(nextLocID) != criticalState[nextLocID])){
+
+						api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
+						api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+						criticalState[locID] = api->getCurrentState(locID);
+						criticalState[nextLocID] = api->getCurrentState(nextLocID);
+						printf("Predicted State is current State: loc: %d and loc: %d at position: %s\n" ,
+								locID, nextLocID, Segment::convertSegmentName(api->getPredictedNextState(locID)));fflush(stdout);
+					}
 				}
-				printf("Predicted State is current State: loc: %d and loc: %d at position: %s\n" , locID, nextLocID, Segment::convertSegmentName(api->getPredictedNextState(locID)));fflush(stdout);
 			}
 			if(api->getCurrentState(locID) == api->getPredictedNextState(nextLocID)){
 				if(api->getLocLogicalDirection(locID) == api->getLocLogicalDirection(nextLocID)){
 					api->setLocSpeed(nextLocID, speed / 2, api->getLocDirection(nextLocID));
 				}else{
-					api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
-					api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+					if((api->getCurrentState(locID) != criticalState[locID]) &&
+							(api->getCurrentState(nextLocID) != criticalState[nextLocID])){
+
+						api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
+						api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+						criticalState[locID] = api->getCurrentState(locID);
+						criticalState[nextLocID] = api->getCurrentState(nextLocID);
+						printf("current State is Predicted State: loc: %d and loc: %d at position: %s\n" ,
+								locID, nextLocID, Segment::convertSegmentName(api->getCurrentState(locID)));fflush(stdout);
+					}
 				}
-				printf("current State is Predicted State: loc: %d and loc: %d at position: %s\n" , locID, nextLocID, Segment::convertSegmentName(api->getCurrentState(locID)));fflush(stdout);
 			}
 			if(api->getCurrentState(locID) == api->getCurrentState(nextLocID)){
 				if(api->getLocLogicalDirection(locID) != api->getLocLogicalDirection(nextLocID)){
-					api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
-					api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+					if((api->getCurrentState(locID) != criticalState[locID]) &&
+							(api->getCurrentState(nextLocID) != criticalState[nextLocID])){
+
+						api->setLocSpeed(locID, speed, !api->getLocDirection(locID));
+						api->setLocSpeed(nextLocID, speed, !api->getLocDirection(nextLocID));
+						criticalState[locID] = api->getCurrentState(locID);
+						criticalState[nextLocID] = api->getCurrentState(nextLocID);
+						printf("current state is current state: loc: %d and loc: %d at position: %s\n" ,
+								locID, nextLocID, Segment::convertSegmentName(api->getPredictedNextState(locID)));fflush(stdout);
+					}
 				}
-				printf("current state is current state: loc: %d and loc: %d at position: %s\n" , locID, nextLocID, Segment::convertSegmentName(api->getPredictedNextState(locID)));fflush(stdout);
 			}
 		}
 	}
@@ -102,7 +137,7 @@ void switchRandomTurn(BidibApi *api){
 
 	Turnout::turnoutID turnID;
 	do{
-		bool turnOk = true;
+		turnOk = true;
 		turnID = (Turnout::turnoutID)(rand() % 7);
 		Segment::segmentID segID;
 		switch(turnID){
@@ -130,14 +165,23 @@ int main() {
 	usleep(1000*2000);
 
 	api.setAllTurnoutsState(Turnout::straightOn);
-//	api.setTurnoutState(Turnout::TNW, Turnout::bendOff);
-//	api.setTurnoutState(Turnout::TNO, Turnout::bendOff);
+	api.setTurnoutState(Turnout::TNW, Turnout::bendOff);
+	api.setTurnoutState(Turnout::TNO, Turnout::bendOff);
 //	api.setTurnoutState(Turnout::TA1, Turnout::bendOff);
 
+	bool directionChanged = false;
 	while(api.isConnected()){
+//		if(((api.getCurrentState(0) == Segment::S2) || (api.getCurrentState(0) == Segment::N2)) && !directionChanged){
+//			api.setLocSpeed(0 , speed, !api.getLocDirection(0));
+//			directionChanged = true;
+//		}
+//		if((api.getCurrentState(0) != Segment::S2) && (api.getCurrentState(0) != Segment::N2)){
+//			directionChanged = false;
+//		}
+
 		handlePredictions(&api);
 
-		switchRandomTurn(&api);
+//		switchRandomTurn(&api);
 
 		usleep(500*1000);
 	}

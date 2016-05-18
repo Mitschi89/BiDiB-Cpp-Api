@@ -72,6 +72,7 @@ public:
 	//returns the predicted next State
 	Segment::segmentID getPredictedNextState(int locID);
 	Segment::segmentID getCurrentState(int locID);
+	Segment::segmentID getPreviousState(int locID);
 
 //	//returns vector of resources of a station with a specific destination
 //	std::vector<Resource> getStationResources(StationID source, StationID destination);
