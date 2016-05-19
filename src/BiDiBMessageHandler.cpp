@@ -96,12 +96,14 @@ bool BiDiBMessageHandler::initBidib() {
 	usleep(1000*100);
 
 	sendGetLocsMessage();
-	printf(". \n"); fflush(stdout);
+	printf(". "); fflush(stdout);
 //		printf("getLocs gesendet... num: %X\n", msgNum);
 
 	sendGetSwitchesMessage();
 	printf(". \n"); fflush(stdout);
 //		printf("getSwitches gesendet... num: %X\n", msgNum);
+
+	printf("Initialization successful\n\n");
 
 	fflush(stdout);
 
@@ -549,9 +551,10 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 		nodeCount = message[4];
 		if(nodeCount == 0){
 			sendNodeTabMessage(); printf("another try to get NodeTab...\n"); fflush(stdout);
-		}
-		if(nodeCount != NODECOUNT){
-			printf("NOT ALL NODES AVAILABLE. CHECK CABLE CONNECTION OR PRESS RESET!\n");
+		}else{
+			if(nodeCount != NODECOUNT){
+				printf("NOT ALL NODES AVAILABLE. CHECK CABLE CONNECTION OR PRESS RESET!\n");
+			}
 		}
 	}
 

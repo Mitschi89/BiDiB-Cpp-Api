@@ -164,8 +164,6 @@ int main() {
 	printf("Program Start...\n\n"); fflush(stdout);
 	BidibApi api;
 
-	usleep(1000*2000);
-
 	api.setAllTurnoutsState(Turnout::straightOn);
 	api.setTurnoutState(Turnout::TNW, Turnout::bendOff);
 	api.setTurnoutState(Turnout::TNO, Turnout::bendOff);
@@ -173,13 +171,6 @@ int main() {
 
 	bool directionChanged = false;
 	while(api.isConnected()){
-//		if(((api.getCurrentState(0) == Segment::S2) || (api.getCurrentState(0) == Segment::N2)) && !directionChanged){
-//			api.setLocSpeed(0 , speed, !api.getLocDirection(0));
-//			directionChanged = true;
-//		}
-//		if((api.getCurrentState(0) != Segment::S2) && (api.getCurrentState(0) != Segment::N2)){
-//			directionChanged = false;
-//		}
 
 		handlePredictions(&api);
 
@@ -187,7 +178,6 @@ int main() {
 
 //		usleep(500*1000);
 	}
-
 
 	printf("\nProgram End... \n"); fflush(stdout);
 
