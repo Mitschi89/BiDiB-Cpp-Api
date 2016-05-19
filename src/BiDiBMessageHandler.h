@@ -51,7 +51,9 @@ public:
 private:
 	void getMessage();
 	void sendMessage(unsigned char *message);
+
 	const char* convertComPortNumber(int comPortNumber);
+
 	int processMessage(unsigned char *message, int length);
 	int processBM(unsigned char *message);
 	int processFeature(unsigned char *message);

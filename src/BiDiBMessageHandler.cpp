@@ -154,8 +154,14 @@ void BiDiBMessageHandler::getMessage() {
 		for (int index = 0 ; index < bytesRead; index++){
 			if(incomingData[index] == BIDIB_PKT_MAGIC){
 				if(rxCRC){
+					printf("INCOMING CRC ERROR !!!\n");
+					printf("Data ");
+					for (int i =0 ; i < messageLength ; i++){
+						printf("%02X ",incomingData[i]);
+					}
+					printf("\n");
+					fflush(stdout);
 					messageLength = 0;
-					printf("INCOMING CRC ERROR !!!\n"); fflush(stdout);
 				}else{
 					processMessage(messageData, messageLength-1);
 					messageLength = 0;
@@ -582,7 +588,7 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 			printf("OneOC not available.\n");
 		}
 		if((entryNumber != gbmMasterID) && (entryNumber !=  oneControlID) && (entryNumber !=  oneOcID)){
-			printf("Unknown Node not available.\n");
+			printf("Unknown Node not available. Number: %d\n", entryNumber);
 		}
 	}
 }
@@ -904,7 +910,7 @@ void BiDiBMessageHandler::sendGetSwitchesMessage() {
 	unsigned char message[] = {
 						6,
 						oneOcID,
-						MSG_BM_GET_RANGE,
+						gbmMasterID,
 						++msgNum[oneOcID],
 						MSG_BM_ADDR_GET_RANGE,
 						0x00,
