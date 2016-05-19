@@ -233,6 +233,7 @@ char* BiDiBMessageHandler::getMessageType(int type) {
 		case MSG_LC_STAT:			return "MSG_LC_STAT";
 		case MSG_BM_DYN_STATE:		return "MSG_BM_DYN_STATE";
 		case MSG_BM_CONFIDENCE:		return "MSG_BM_CONFIDENCE";
+		case MSG_NODE_NEW:			return "MSG_NODE_NEW";
 
 		default: 					return "unknown Message Type";
 	}
@@ -307,6 +308,7 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 											break;
 			case MSG_BM_DYN_STATE:
 			case MSG_BM_CONFIDENCE:
+			case MSG_NODE_NEW:
 			case MSG_CS_DRIVE_ACK: 			if(SHOWSYSMESSAGES){
 												printMessage(msg);
 											}
@@ -373,7 +375,17 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 			locAllPositions += message[6];
 		}else{
 			if(FAULTSON){
-				processFaultMessage(message);
+				uint32_t msg = 0;
+				msg += message[9] << 24;
+				msg += message[8] << 16;
+				msg += message[7] << 8;
+				msg += message[6];
+
+				if(multiFault != msg){
+					processFaultMessage(message);
+					multiFault = msg;
+				}
+
 			}
 		}
 	}
