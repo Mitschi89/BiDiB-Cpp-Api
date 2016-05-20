@@ -12,12 +12,8 @@
 class locFunction {
 public:
 
-	enum locFunctionID{
-		F1 = 1,
-		F2 = 2,
-		F3 = 3,
-		F4 = 4,
-		FLight = 0
+	enum locFunctionID {
+		F1 = 1, F2 = 2, F3 = 3, F4 = 4, FLight = 0
 	} ID;
 
 	locFunction();

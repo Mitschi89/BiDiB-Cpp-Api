@@ -33,7 +33,7 @@ public:
 	bool driveStatus = false;
 	Turnout turnouts[MAXNUMBEROFTURNOUTS];
 
-	struct Node{
+	struct Node {
 		Segment::segmentID currentNode;
 		Segment::segmentID nextNode;
 		Segment::segmentID previousNode;

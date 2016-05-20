@@ -51,7 +51,8 @@ public:
 	// returns logical direction of loc
 	bool getLocLogicalDirection(int locID);
 	//sets a loc function
-	void setLocFunction(int locID, locFunction::locFunctionID ID, bool functionState);
+	void setLocFunction(int locID, locFunction::locFunctionID ID,
+			bool functionState);
 	//returns the state of a function of a loc
 	bool getLocFunctionstate(int locID, locFunction::locFunctionID ID);
 
@@ -60,7 +61,8 @@ public:
 	//returns all turnout states
 	std::vector<Turnout> getAllTurnoutStates();
 	// sets the state of a turnout
-	void setTurnoutState(Turnout::turnoutID turnID, Turnout::turnDirection turnDir);
+	void setTurnoutState(Turnout::turnoutID turnID,
+			Turnout::turnDirection turnDir);
 	// sets all turnouts in one state
 	void setAllTurnoutsState(Turnout::turnDirection turnDir);
 	//toggels the state of a turnout
@@ -96,6 +98,5 @@ private:
 	//basic variable for all actions
 	BiDiBMessageHandler bidibMessageHandler;
 };
-
 
 #endif /* BIDIBAPI_H_ */

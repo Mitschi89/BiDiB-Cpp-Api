@@ -8,20 +8,18 @@
 
 #include "Serial.h"
 
-Serial::Serial(const char *portName){
+Serial::Serial(const char *portName) {
 	fd = open(portName, O_RDWR | O_NOCTTY | O_NDELAY);
 	struct termios term_attr;
 
-	if(fd == -1){
+	if (fd == -1) {
 		printf("Open_port: Unable to open %s \n", portName);
-	}
-	else{
+	} else {
 		fcntl(fd, F_SETFL, 0);
 		printf("Port is open.\n");
 	}
 
-	if (tcgetattr(fd, &term_attr) != 0)
-	{
+	if (tcgetattr(fd, &term_attr) != 0) {
 		printf("Could not get attributes.\n");
 		return;
 	}
@@ -34,26 +32,27 @@ Serial::Serial(const char *portName){
 
 }
 
-Serial::~Serial(){
+Serial::~Serial() {
 	int err = 0;
 
-	if(fd >= 0){
+	if (fd >= 0) {
 		tcflush(fd, TCOFLUSH);
-		err = close( fd );
+		err = close(fd);
 		fd = -1;
 	}
 }
 
-int Serial::ReadData(unsigned char *buffer, unsigned int nbChar){
+int Serial::ReadData(unsigned char *buffer, unsigned int nbChar) {
 	int length = read(fd, buffer, nbChar);
-	if((length < 0) && (errno == EAGAIN)) return 0;
+	if ((length < 0) && (errno == EAGAIN))
+		return 0;
 	return length;
 }
 
-
-int Serial::WriteData(unsigned char *buffer, unsigned int nbChar){
+int Serial::WriteData(unsigned char *buffer, unsigned int nbChar) {
 	int n = write(fd, buffer, nbChar);
-	if((n < 0) && (errno == EAGAIN)) return 0;
+	if ((n < 0) && (errno == EAGAIN))
+		return 0;
 
 //	printf("Send: ");
 //	for (int i =0 ; i < nbChar ; i++){
@@ -65,9 +64,7 @@ int Serial::WriteData(unsigned char *buffer, unsigned int nbChar){
 	return n;
 }
 
-
-bool Serial::IsConnected(){
+bool Serial::IsConnected() {
 	return (fd != -1);
 }
-
 

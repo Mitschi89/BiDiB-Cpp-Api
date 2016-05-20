@@ -10,7 +10,6 @@
 
 Turnout::Turnout() {
 	// TODO Auto-generated constructor stub
-
 }
 
 Turnout::~Turnout() {

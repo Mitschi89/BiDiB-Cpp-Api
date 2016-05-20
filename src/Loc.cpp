@@ -6,12 +6,10 @@
 // Description 	: creates a Loc class for saving informations about a loc
 //============================================================================
 
-
 #include "Loc.h"
 
 Loc::Loc() {
 	// TODO Auto-generated constructor stub
-
 }
 
 Loc::~Loc() {

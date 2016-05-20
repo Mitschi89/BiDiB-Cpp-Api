@@ -12,14 +12,13 @@
 #include <stdint.h>
 #include "StateMaschine.h"
 
-
 class Loc {
 public:
 	int id = 0;
 	uint32_t position = 0;
 	int speed = 0;
 	bool direction = 0; //true == forward
-	bool functionState[4] = {false};
+	bool functionState[4] = { false };
 	bool lightState = false;
 
 	StateMaschine stateMaschine;

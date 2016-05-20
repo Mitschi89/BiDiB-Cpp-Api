@@ -10,7 +10,6 @@
 
 locFunction::locFunction() {
 	// TODO Auto-generated constructor stub
-
 }
 
 locFunction::~locFunction() {
