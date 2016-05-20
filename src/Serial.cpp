@@ -42,14 +42,14 @@ Serial::~Serial() {
 	}
 }
 
-int Serial::ReadData(unsigned char *buffer, unsigned int nbChar) {
+int Serial::readData(unsigned char *buffer, unsigned int nbChar) {
 	int length = read(fd, buffer, nbChar);
 	if ((length < 0) && (errno == EAGAIN))
 		return 0;
 	return length;
 }
 
-int Serial::WriteData(unsigned char *buffer, unsigned int nbChar) {
+int Serial::writeData(unsigned char *buffer, unsigned int nbChar) {
 	int n = write(fd, buffer, nbChar);
 	if ((n < 0) && (errno == EAGAIN)) {
 		return 0;
@@ -57,7 +57,7 @@ int Serial::WriteData(unsigned char *buffer, unsigned int nbChar) {
 	return n;
 }
 
-bool Serial::IsConnected() {
+bool Serial::isConnected() {
 	return (fd != -1);
 }
 

@@ -33,12 +33,12 @@ public:
 	//maximum number of bytes available, it will return only the
 	//bytes available. The function return -1 when nothing could
 	//be read, the number of bytes actually read.
-	int ReadData(unsigned char *buffer, unsigned int nbChar);
+	int readData(unsigned char *buffer, unsigned int nbChar);
 	//Writes data from a buffer through the Serial connection
 	//return true on success.
-	int WriteData(unsigned char *buffer, unsigned int nbChar);
+	int writeData(unsigned char *buffer, unsigned int nbChar);
 	//Check if we are actually connected
-	bool IsConnected();
+	bool isConnected();
 };
 
 #endif /* SERIAL_H_ */
