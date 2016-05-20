@@ -70,7 +70,8 @@ private:
 	int setLocPosition(int id, int position, bool occupied);
 
 	char* getMessageType(int type);
-	void printMessage(unsigned char *message);
+	void printReceiveMessage(unsigned char *message);
+	void printSendMessage(unsigned char *message, int length);
 
 	Serial* serialPort;
 	std::thread receiverThread;

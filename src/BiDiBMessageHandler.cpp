@@ -188,15 +188,6 @@ void BiDiBMessageHandler::getMessage() {
 }
 
 void BiDiBMessageHandler::sendMessage(unsigned char* message) {
-	int messageOffset = 0;
-	if(message[1] != gbmMasterID){
-		messageOffset = 1;
-	}
-
-	if(message[2 + messageOffset] == 0x06){
-		printf("Hier wird die 6 gesendet: "); fflush(stdout);
-		printMessage(message);
-	}
 
 	unsigned char rawMessage [256];
 	int index = 0;
@@ -204,20 +195,29 @@ void BiDiBMessageHandler::sendMessage(unsigned char* message) {
 	int length = message[0];
 	rawMessage[index++] = BIDIB_PKT_MAGIC;
 
-	for(int i = 0; i <= length; i++){
+	for(int i = 0; i < length+1; i++){
 		if ((message[i] == BIDIB_PKT_MAGIC) || (message[i] == BIDIB_PKT_ESCAPE) ){
 			rawMessage[index++] = BIDIB_PKT_ESCAPE;       											// escape this char
-		    rawMessage[index]= message[i] ^ 0x20;                           						// 'veraendern'
+		    rawMessage[index++]= message[i] ^ 0x20;                           						// change char
 		}else{
-			rawMessage[index]= message[i];
+			rawMessage[index++]= message[i];
 		}
-		txCRC = crc_array[rawMessage[index] ^ txCRC];
-		index++;
+		txCRC = crc_array[message[i] ^ txCRC];
 	}
-	rawMessage[index++] = txCRC;
+
+	if ((txCRC == BIDIB_PKT_MAGIC) || (txCRC == BIDIB_PKT_ESCAPE) ){
+		rawMessage[index++] = BIDIB_PKT_ESCAPE;       											// escape this char
+		rawMessage[index++]= txCRC ^ 0x20;                           							// change char
+	}else{
+		rawMessage[index++]= txCRC;
+	}
+
 	rawMessage[index] = BIDIB_PKT_MAGIC;
 
+
 	serialPort->WriteData(rawMessage, index + 1);
+
+	printSendMessage(rawMessage, index + 1);
 
 	return;
 }
@@ -269,32 +269,32 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 
 		switch(msg[3 + messageOffset]){
 			case MSG_BM_ADDRESS:			if(SHOWBMMessages){
-												printMessage(msg);
+											printReceiveMessage(msg);
 											}
 											processBM(msg);
 											break;
 
 			case MSG_BM_OCC:
 			case MSG_BM_FREE:				if(SHOWALLBMMESSAGES){
-												printMessage(msg);
+											printReceiveMessage(msg);
 											}
 											processBM(msg);
 											break;
 
 			case MSG_BM_MULTIPLE:			if(SHOWBMMULTI){
-												printMessage(msg);
+											printReceiveMessage(msg);
 											}
 											processBM(msg);
 											break;
 			case MSG_FEATURE_COUNT:
 			case MSG_FEATURE: 				if(SHOWFEATURE){
-												printMessage(msg);
+												printReceiveMessage(msg);
 											}
 											processFeature(msg);
 											break;
 			case MSG_SYS_MAGIC:
 			case MSG_BOOST_DIAGNOSTIC:		if(SHOWDIAGNOSTIC & SHOWSYSMESSAGES){
-												printMessage(msg);
+												printReceiveMessage(msg);
 											}
 											processOther(msg);
 											break;
@@ -302,19 +302,19 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 			case MSG_LC_NA:
 			case MSG_LC_MACRO_STATE:
 			case MSG_LC_STAT:				if(SHOWTURNOUTSTATE){
-												printMessage(msg);
+												printReceiveMessage(msg);
 											}
 											processTurnoutStateMessage(msg);
 											break;
 			case MSG_NODE_NA:
 			case MSG_NODETAB_COUNT:
 			case MSG_NODETAB:				if(SHOWNODETAB){
-												printMessage(msg);
+												printReceiveMessage(msg);
 											}
 											processNodeTabMessage(msg);
 											break;
 			case MSG_SYS_ERROR:				if(SHOWERRORMESSAGE){
-												printMessage(msg);
+												printReceiveMessage(msg);
 												processErrorMessage(msg);
 											}
 											break;
@@ -322,13 +322,13 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 			case MSG_BM_CONFIDENCE:
 			case MSG_NODE_NEW:
 			case MSG_CS_DRIVE_ACK: 			if(SHOWSYSMESSAGES){
-												printMessage(msg);
+												printReceiveMessage(msg);
 											}
 											processOther(msg);
 											break;
 
 			default: 						if(SHOWSYSMESSAGES){
-												printMessage(msg);
+												printReceiveMessage(msg);
 											}
 											break;
 		}
@@ -680,7 +680,7 @@ int BiDiBMessageHandler::processErrorMessage(unsigned char* message) {
 	}
 }
 
-void BiDiBMessageHandler::printMessage(unsigned char* message) {
+void BiDiBMessageHandler::printReceiveMessage(unsigned char* message) {
 	int messageOffset = 0;
 	if(message[1] != 0x00){
 		messageOffset = 1;
@@ -688,14 +688,24 @@ void BiDiBMessageHandler::printMessage(unsigned char* message) {
 
 	int msgLen = message[0];
 
-	printf("Receive: ");
-	for (int i =0 ; i < msgLen + 1; i++){
+	printf("Receive: \t");
+	for (int i = 0; i < msgLen + 1; i++){
 		printf("%02X ",message[i]);
 	}
 	printf(" %s", getMessageType(message[3 + messageOffset]));
 	printf("\n");
 	fflush(stdout);
 }
+
+void BiDiBMessageHandler::printSendMessage(unsigned char* message, int length) {
+	printf("Send: \t\t");
+	for(int i = 0; i < length; i++){
+		printf("%02X ",message[i]);
+	}
+	printf("\n");
+	fflush(stdout);
+}
+
 
 void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 
