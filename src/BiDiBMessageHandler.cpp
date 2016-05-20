@@ -217,7 +217,7 @@ void BiDiBMessageHandler::sendMessage(unsigned char* message) {
 
 	serialPort->WriteData(rawMessage, index + 1);
 
-	printSendMessage(rawMessage, index + 1);
+//	printSendMessage(rawMessage, index + 1);
 
 	return;
 }

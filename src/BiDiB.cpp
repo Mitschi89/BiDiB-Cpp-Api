@@ -169,14 +169,10 @@ int main() {
 	api.setTurnoutState(Turnout::TNO, Turnout::bendOff);
 //	api.setTurnoutState(Turnout::TA1, Turnout::bendOff);
 
-	bool directionChanged = false;
 	while(api.isConnected()){
+		api.selfTestTurnout();
 
 		handlePredictions(&api);
-
-//		switchRandomTurn(&api);
-
-//		usleep(500*1000);
 	}
 
 	printf("\nProgram End... \n"); fflush(stdout);
