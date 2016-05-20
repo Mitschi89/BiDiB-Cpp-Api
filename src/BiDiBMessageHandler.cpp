@@ -299,7 +299,7 @@ char* BiDiBMessageHandler::getMessageType(int type) {
 	}
 }
 
-int BiDiBMessageHandler::processMessage(unsigned char *message, int length) {
+void BiDiBMessageHandler::processMessage(unsigned char *message, int length) {
 	int maxLength = 0;
 
 	do {
@@ -395,13 +395,13 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length) {
 	} while (length > maxLength);
 }
 
-int BiDiBMessageHandler::processBM(unsigned char* message) {
+void BiDiBMessageHandler::processBM(unsigned char* message) {
 	int messageOffset = 0;
 	if (message[1] != gbmMasterID) {
 		if (message[1] == oneOcID) {
 			messageOffset = 1;
 		} else {
-			return -1;
+			return;
 		}
 	}
 
@@ -464,20 +464,20 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 
 	sendMirrorMessage(message);
 
-	return 0;
+	return;
 }
 
-int BiDiBMessageHandler::processOther(unsigned char* message) {
+void BiDiBMessageHandler::processOther(unsigned char* message) {
 
 	int messageOffset = 0;
 	if (message[1] != gbmMasterID) {
 		messageOffset = 1;
 	}
 
-	return 0;
+	return;
 }
 
-int BiDiBMessageHandler::processFeature(unsigned char* message) {
+void BiDiBMessageHandler::processFeature(unsigned char* message) {
 	int messageOffset = 0;
 	if (message[1] != gbmMasterID) {
 		messageOffset = 1;
@@ -488,7 +488,7 @@ int BiDiBMessageHandler::processFeature(unsigned char* message) {
 	}
 }
 
-int BiDiBMessageHandler::processlocMessage(unsigned char* message) {
+void BiDiBMessageHandler::processlocMessage(unsigned char* message) {
 	int locPosition = message[4];
 	int locAddress = message[5];
 	int locIndex = -1;
@@ -515,16 +515,16 @@ int BiDiBMessageHandler::processlocMessage(unsigned char* message) {
 	}
 }
 
-int BiDiBMessageHandler::processFunctionMessage(unsigned char* message) {
+void BiDiBMessageHandler::processFunctionMessage(unsigned char* message) {
 }
 
-int BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
+void BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
 
 	int messageOffset = 0;
 	if (message[1] == oneOcID) {
 		messageOffset = 1;
 	} else {
-		return -1;
+		return;
 	}
 
 	if (message[3 + messageOffset] == MSG_BM_OCC) {
@@ -552,7 +552,7 @@ int BiDiBMessageHandler::processFaultMessage(unsigned char* message) {
 	}
 }
 
-int BiDiBMessageHandler::setFault(int switchID, bool active) {
+void BiDiBMessageHandler::setFault(int switchID, bool active) {
 	//switch: 8, 10, 11, 12, 14, 16
 	//button: 7, 9, 13, 15, 17, 18
 	int position = -1;
@@ -603,7 +603,7 @@ int BiDiBMessageHandler::setFault(int switchID, bool active) {
 	}
 }
 
-int BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
+void BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
 	bool activeFault = false;
 	if (FAULTSON) {
 		switch (position) {
@@ -639,12 +639,12 @@ int BiDiBMessageHandler::setLocPosition(int id, int position, bool occupied) {
 	}
 }
 
-int BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
+void BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
 	int messageOffset = 0;
 	if (message[1] == oneControlID) {
 		messageOffset = 1;
 	} else {
-		return -1;
+		return;
 	}
 
 	if (message[3 + messageOffset] == MSG_LC_NA) {
@@ -697,7 +697,7 @@ int BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
 			turnID = 3;
 			break;
 		default:
-			return -1;
+			return;
 		}
 
 		turnouts[turnID].turnDir = (Turnout::turnDirection) direction;
@@ -709,7 +709,7 @@ int BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
 	}
 }
 
-int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
+void BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 
 	if (message[3] == MSG_NODETAB_COUNT) {
 		nodeCount = message[4];
@@ -769,7 +769,7 @@ int BiDiBMessageHandler::processNodeTabMessage(unsigned char* message) {
 	}
 }
 
-int BiDiBMessageHandler::processErrorMessage(unsigned char* message) {
+void BiDiBMessageHandler::processErrorMessage(unsigned char* message) {
 	int messageOffset = 0;
 	if (message[1] != gbmMasterID) {
 		messageOffset = 1;

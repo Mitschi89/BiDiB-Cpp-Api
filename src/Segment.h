@@ -45,7 +45,7 @@ public:
 		W2 = 29,
 		W3 = 30,
 		TSW = 31
-	} ID;
+	} ID = DEFAULT;
 
 	Segment();
 	virtual ~Segment();

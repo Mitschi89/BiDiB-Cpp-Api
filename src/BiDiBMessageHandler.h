@@ -55,19 +55,19 @@ private:
 
 	const char* convertComPortNumber(int comPortNumber);
 
-	int processMessage(unsigned char *message, int length);
-	int processBM(unsigned char *message);
-	int processFeature(unsigned char *message);
-	int processOther(unsigned char *message);
-	int processlocMessage(unsigned char *message);
-	int processFaultMessage(unsigned char *message);
-	int processFunctionMessage(unsigned char *message);
-	int processTurnoutStateMessage(unsigned char *message);
-	int processNodeTabMessage(unsigned char *message);
-	int processErrorMessage(unsigned char *message);
+	void processMessage(unsigned char *message, int length);
+	void processBM(unsigned char *message);
+	void processFeature(unsigned char *message);
+	void processOther(unsigned char *message);
+	void processlocMessage(unsigned char *message);
+	void processFaultMessage(unsigned char *message);
+	void processFunctionMessage(unsigned char *message);
+	void processTurnoutStateMessage(unsigned char *message);
+	void processNodeTabMessage(unsigned char *message);
+	void processErrorMessage(unsigned char *message);
 
-	int setFault(int switchID, bool active);
-	int setLocPosition(int id, int position, bool occupied);
+	void setFault(int switchID, bool active);
+	void setLocPosition(int id, int position, bool occupied);
 
 	char* getMessageType(int type);
 	void printReceiveMessage(unsigned char *message);

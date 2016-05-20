@@ -51,16 +51,9 @@ int Serial::ReadData(unsigned char *buffer, unsigned int nbChar) {
 
 int Serial::WriteData(unsigned char *buffer, unsigned int nbChar) {
 	int n = write(fd, buffer, nbChar);
-	if ((n < 0) && (errno == EAGAIN))
+	if ((n < 0) && (errno == EAGAIN)) {
 		return 0;
-
-//	printf("Send: ");
-//	for (int i =0 ; i < nbChar ; i++){
-//		printf("%02X ",buffer[i]);
-//	}
-//	printf("\n");
-//	fflush(stdout);
-
+	}
 	return n;
 }
 
