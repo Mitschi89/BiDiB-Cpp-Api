@@ -286,7 +286,11 @@ std::vector<Segment::segmentID> BidibApi::getLocPosition(int locID) {
 }
 
 void BidibApi::setTurnoutState(Turnout::turnoutID turnID, Turnout::turnDirection turnDir) {
-	bidibMessageHandler.sendTurnMessage(turnID, turnDir);
+	if(MAKROTURN){
+		bidibMessageHandler.sendMakro(turnID, turnDir);
+	}else{
+		bidibMessageHandler.sendTurnMessage(turnID, turnDir);
+	}
 }
 
 void BidibApi::setAllTurnoutsState(Turnout::turnDirection turnDir) {

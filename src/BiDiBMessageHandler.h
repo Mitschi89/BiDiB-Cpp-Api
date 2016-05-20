@@ -28,7 +28,6 @@ public:
 	bool initSerialPort(int comPortNumber);
 	bool initBidib();
 
-
 	void sendSystemMessage(int node, char bidibMessageID);
 	void sendNodeTabMessage();
 	void sendFeatureMessage(int node);
@@ -41,6 +40,7 @@ public:
 	void sendFunctionStateMessage(int locID, int functionNumber, bool functionState);
 	void sendGetLocsMessage();
 	void sendGetSwitchesMessage();
+	void sendMakro(int turnID, bool direction);
 	int isConnected();
 
 	Loc locs [MAXNUMBEROFSEGEMENTSWITHLOC];
@@ -51,6 +51,7 @@ public:
 private:
 	void getMessage();
 	void sendMessage(unsigned char *message);
+	void sendMirrorMessage(unsigned char *message);
 
 	const char* convertComPortNumber(int comPortNumber);
 

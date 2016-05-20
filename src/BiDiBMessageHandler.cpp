@@ -188,6 +188,16 @@ void BiDiBMessageHandler::getMessage() {
 }
 
 void BiDiBMessageHandler::sendMessage(unsigned char* message) {
+	int messageOffset = 0;
+	if(message[1] != gbmMasterID){
+		messageOffset = 1;
+	}
+
+	if(message[2 + messageOffset] == 0x06){
+		printf("Hier wird die 6 gesendet: "); fflush(stdout);
+		printMessage(message);
+	}
+
 	unsigned char rawMessage [256];
 	int index = 0;
 	int txCRC = 0;
@@ -234,6 +244,7 @@ char* BiDiBMessageHandler::getMessageType(int type) {
 		case MSG_BM_DYN_STATE:		return "MSG_BM_DYN_STATE";
 		case MSG_BM_CONFIDENCE:		return "MSG_BM_CONFIDENCE";
 		case MSG_NODE_NEW:			return "MSG_NODE_NEW";
+		case MSG_LC_MACRO_STATE:	return "MSG_LC_MACRO_STATE";
 
 		default: 					return "unknown Message Type";
 	}
@@ -289,6 +300,7 @@ int BiDiBMessageHandler::processMessage(unsigned char *message, int length){
 											break;
 
 			case MSG_LC_NA:
+			case MSG_LC_MACRO_STATE:
 			case MSG_LC_STAT:				if(SHOWTURNOUTSTATE){
 												printMessage(msg);
 											}
@@ -367,6 +379,7 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 	}
 
 	if(message[3 + messageOffset] == MSG_BM_MULTIPLE){
+
 		if(!messageOffset){
 			locAllPositions = 0;
 			locAllPositions += message[9] << 24;
@@ -389,6 +402,8 @@ int BiDiBMessageHandler::processBM(unsigned char* message) {
 			}
 		}
 	}
+
+	sendMirrorMessage(message);
 
 	return 0;
 }
@@ -554,6 +569,31 @@ int BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
 			locs[i].stateMaschine.turnouts[turnID].turnDir = turnouts[turnID].turnDir;
 		}
 
+	}
+
+	if(message[3 + messageOffset] == MSG_LC_MACRO_STATE){
+		int makroID = message[4 + messageOffset];
+		bool direction = !(makroID % 2);
+
+		makroID = makroID - direction;
+		int turnID = -1;
+
+		switch(makroID){
+			case 8:		turnID = 2; break;
+			case 10:	turnID = 0; break;
+			case 12:	turnID = 5; break;
+			case 14:	turnID = 4; break;
+			case 16:	turnID = 6; break;
+			case 18:	turnID = 1; break;
+			case 20:	turnID = 3; break;
+			default:	return -1;
+		}
+
+		turnouts[turnID].turnDir = (Turnout::turnDirection) direction;
+
+		for(int i = 0; i < MAXNUMBEROFSEGEMENTSWITHLOC; i++){
+			locs[i].stateMaschine.turnouts[turnID].turnDir = turnouts[turnID].turnDir;
+		}
 	}
 }
 
@@ -931,5 +971,55 @@ void BiDiBMessageHandler::sendGetSwitchesMessage() {
 						0x00,
 						24
 						};
+	sendMessage(message);
+}
+
+void BiDiBMessageHandler::sendMakro(int turnID, bool direction) {
+	int index = -1;
+	switch(turnID){
+		case 0:		index = 10; break;
+		case 1:		index = 18; break;
+		case 2:		index = 8; break;
+		case 3:		index = 20; break;
+		case 4:		index = 14; break;
+		case 5:		index = 12; break;
+		case 6:		index = 16; break;
+		default:	return;
+	}
+
+	if(!direction){
+		index++;
+	}
+
+	unsigned char message[] = {
+						6,
+						oneControlID,
+						gbmMasterID,
+						++msgNum[oneControlID],
+						MSG_LC_MACRO_HANDLE,
+						index,
+						1
+						};
+	sendMessage(message);
+}
+
+void BiDiBMessageHandler::sendMirrorMessage(unsigned char* message) {
+	int messageOffset = 0;
+	int messageSender = 0;
+	if(message[1] != gbmMasterID){
+		messageOffset = 1;
+		messageSender = message[1];
+	}
+
+	int type = message[3 + messageOffset];
+	int mirrorType;
+	switch(type){
+		case MSG_BM_MULTIPLE:	mirrorType = MSG_BM_MIRROR_MULTIPLE; break;
+		case MSG_BM_OCC:		mirrorType = MSG_BM_MIRROR_OCC; break;
+		case MSG_BM_FREE:		mirrorType = MSG_BM_MIRROR_FREE; break;
+		default:				return;
+	}
+	message[2 + messageOffset] = ++msgNum[messageSender];
+	message[3 + messageOffset] = mirrorType;
 	sendMessage(message);
 }
