@@ -311,6 +311,7 @@ bool BidibApi::isConnected() {
 	if (bidibMessageHandler.isConnected() == 1) {
 		return true;
 	}
+	return false;
 }
 
 bool BidibApi::isLocOnPosition(int locID, Segment::segmentID segID) {
