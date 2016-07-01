@@ -14,7 +14,7 @@ public:
 
 	enum locFunctionID {
 		F1 = 1, F2 = 2, F3 = 3, F4 = 4, FLight = 0
-	} ID = 0;
+	} ID = FLight;
 
 	locFunction();
 	virtual ~locFunction();

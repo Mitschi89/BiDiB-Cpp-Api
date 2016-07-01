@@ -41,7 +41,7 @@ BiDiBMessageHandler::~BiDiBMessageHandler() {
 
 bool BiDiBMessageHandler::initSerialPort(const char* portName) {
 	serialPort = new Serial(portName);
-	if (!serialPort->IsConnected()) {
+	if (!serialPort->isConnected()) {
 		printf(
 				"Could NOT establish a serial connection. Check COM-Port! See BiDiBMessageHandler Constructor\n");
 		return false;
@@ -54,7 +54,7 @@ bool BiDiBMessageHandler::initSerialPort(const char* portName) {
 
 bool BiDiBMessageHandler::initSerialPort(int comPortNumber) {
 	serialPort = new Serial(convertComPortNumber(comPortNumber));
-	if (!serialPort->IsConnected()) {
+	if (!serialPort->isConnected()) {
 		printf(
 				"Could NOT establish a serial connection. Check COM-Port! See BiDiBMessageHandler Constructor\n");
 		return false;
@@ -96,6 +96,8 @@ bool BiDiBMessageHandler::initBidib() {
 	}
 
 	sendSystemMessage(gbmMasterID, MSG_SYS_ENABLE);
+	sendSystemMessage(oneControlID, MSG_SYS_ENABLE);
+	sendSystemMessage(oneOcID, MSG_SYS_ENABLE);
 	printf(". ");
 	fflush(stdout);
 //		printf("Sys_enable gesendet... num: %X\n", msgNum);
@@ -179,8 +181,8 @@ void BiDiBMessageHandler::getMessage() {
 	int escapeHot = 0;
 	int rxCRC = 0;
 
-	while (serialPort->IsConnected() && serialPort != NULL) {
-		bytesRead = serialPort->ReadData(incomingData, maxReadingBytes);
+	while (serialPort->isConnected() && serialPort != NULL) {
+		bytesRead = serialPort->readData(incomingData, maxReadingBytes);
 
 		for (int index = 0; index < bytesRead; index++) {
 			if (incomingData[index] == BIDIB_PKT_MAGIC) {
@@ -244,7 +246,7 @@ void BiDiBMessageHandler::sendMessage(unsigned char* message) {
 
 	rawMessage[index] = BIDIB_PKT_MAGIC;
 
-	serialPort->WriteData(rawMessage, index + 1);
+	serialPort->writeData(rawMessage, index + 1);
 
 //	printSendMessage(rawMessage, index + 1);
 
@@ -293,6 +295,8 @@ char* BiDiBMessageHandler::getMessageType(int type) {
 		return "MSG_NODE_NEW";
 	case MSG_LC_MACRO_STATE:
 		return "MSG_LC_MACRO_STATE";
+	case MSG_ACCESSORY_STATE:
+		return "MSG_ACCESSORY_STATE";
 
 	default:
 		return "unknown Message Type";
@@ -352,7 +356,7 @@ void BiDiBMessageHandler::processMessage(unsigned char *message, int length) {
 			}
 			processOther(msg);
 			break;
-
+		case MSG_ACCESSORY_STATE:
 		case MSG_LC_NA:
 		case MSG_LC_MACRO_STATE:
 		case MSG_LC_STAT:
@@ -647,9 +651,15 @@ void BiDiBMessageHandler::processTurnoutStateMessage(unsigned char* message) {
 		return;
 	}
 
+	if (message[3 + messageOffset] == MSG_ACCESSORY_STATE) {
+		if(message[4 + messageOffset] == 0xFF){
+			printf("Attention! Turnout was switched by hand!\n");
+		}
+	}
+
 	if (message[3 + messageOffset] == MSG_LC_NA) {
 		int port = message[5 + messageOffset];
-		printf("Turnout port: %d not available. Check cable connection", port);
+		printf("Turnout port: %d not available. Check cable connection\n", port);
 	}
 
 	if (message[3 + messageOffset] == MSG_LC_STAT) {
@@ -867,11 +877,21 @@ void BiDiBMessageHandler::sendSystemMessage(int node, char bidibMessageID) {
 	case MSG_SYS_DISABLE:
 
 	case MSG_SYS_ENABLE:
-		message[0] = 3;
-		message[1] = gbmMasterID;
-		message[2] = ++msgNum[node];
-		message[3] = bidibMessageID;
-		break;
+		if(node == gbmMasterID){
+			message[0] = 3;
+			message[1] = gbmMasterID;
+			message[2] = ++msgNum[node];
+			message[3] = bidibMessageID;
+			break;
+		} else {
+			message[0] = 4;
+			message[1] = node;
+			message[2] = gbmMasterID;
+			message[3] = ++msgNum[node];
+			message[4] = bidibMessageID;
+			break;
+		}
+
 
 	default:
 		return;

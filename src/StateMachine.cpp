@@ -1,21 +1,21 @@
 /*
- * StateMaschine.cpp
+ * StateMachine.cpp
  *
  *  Created on: May 11, 2016
  *      Author: misc0894
  */
 
-#include "StateMaschine.h"
+#include "StateMachine.h"
 
-StateMaschine::StateMaschine() {
+StateMachine::StateMachine() {
 	setCircles();
 }
 
-StateMaschine::~StateMaschine() {
+StateMachine::~StateMachine() {
 	// TODO Auto-generated destructor stub
 }
 
-void StateMaschine::updateState(int currentPosition) {
+void StateMachine::updateState(int currentPosition) {
 
 	previousState = currentState;
 	currentState = (Segment::segmentID) currentPosition;
@@ -26,7 +26,7 @@ void StateMaschine::updateState(int currentPosition) {
 	}
 }
 
-bool StateMaschine::updateDirection() {
+bool StateMachine::updateDirection() {
 
 	for (int i = 0; i < (int) bigCircle.size(); i++) {
 		if (bigCircle.at(i).currentNode == currentState) {
@@ -71,7 +71,7 @@ bool StateMaschine::updateDirection() {
 	return logicalDirection;
 }
 
-Segment::segmentID StateMaschine::predictedNextState() {
+Segment::segmentID StateMachine::predictedNextState() {
 	Segment::segmentID nextState = Segment::DEFAULT;
 
 	if (!driveStatus) {
@@ -367,7 +367,7 @@ Segment::segmentID StateMaschine::predictedNextState() {
 	return nextState;
 }
 
-void StateMaschine::setCircles() {
+void StateMachine::setCircles() {
 	Node node;
 
 	node.previousNode = Segment::TSW;

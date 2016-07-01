@@ -5,8 +5,8 @@
  *      Author: misc0894
  */
 
-#ifndef STATEMASCHINE_H_
-#define STATEMASCHINE_H_
+#ifndef STATEMACHINE_H_
+#define STATEMACHINE_H_
 
 #include "Segment.h"
 #include "Turnout.h"
@@ -14,10 +14,10 @@
 #include <stdio.h>
 #include <vector>
 
-class StateMaschine {
+class StateMachine {
 public:
-	StateMaschine();
-	virtual ~StateMaschine();
+	StateMachine();
+	virtual ~StateMachine();
 
 	void updateState(int currentPosition);
 	bool updateDirection();
@@ -44,4 +44,4 @@ public:
 
 };
 
-#endif /* STATEMASCHINE_H_ */
+#endif /* STATEMACHINE_H_ */

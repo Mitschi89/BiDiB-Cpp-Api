@@ -10,7 +10,7 @@
 #define LOC_H_
 
 #include <stdint.h>
-#include "StateMaschine.h"
+#include "StateMachine.h"
 
 class Loc {
 public:
@@ -21,7 +21,7 @@ public:
 	bool functionState[4] = { false };
 	bool lightState = false;
 
-	StateMaschine stateMaschine;
+	StateMachine stateMachine;
 
 	Loc();
 	~Loc();

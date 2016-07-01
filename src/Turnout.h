@@ -18,7 +18,7 @@ public:
 
 	enum turnoutID {
 		TNW = 0, TSW = 1, TC = 2, TA2 = 3, TA1 = 4, TNO = 5, TSO = 6
-	} ID = 0;
+	} ID = TNW;
 
 	Turnout();
 	~Turnout();

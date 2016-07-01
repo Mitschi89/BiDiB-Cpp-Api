@@ -232,9 +232,9 @@ int main() {
 //	api.setTurnoutState(Turnout::TA1, Turnout::bendOff);
 
 	while (api.isConnected()) {
-		api.selfTestTurnout();
-
-		handlePredictions(&api);
+//		api.selfTestTurnout();
+//
+//		handlePredictions(&api);
 	}
 
 	printf("\nProgram End... \n");
